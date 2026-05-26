@@ -539,6 +539,8 @@ const SEED_RACES = [
   { id:3,  year:'2019', name:'Rock the Ridge',                               dist:'50m',  distMi:50,    date:'May 4th 2019',   location:'New Paltz, NY',    time:'10:33:28',  overall:'80 / 354', division:'53 / 202', url:'https://ultrarunning.com/calendar/event/rock-the-ridge/race/22958/results#2095089',                                              notes:'', badges:[] },
   // 2018
   { id:4,  year:'2018', name:'The North Face Endurance Challenge New York',  dist:'50m',  distMi:50,    date:'May 5th 2018',   location:'New York, NY',     time:'13:54:07',  overall:'255 / 268',division:'222 / 232',url:'https://ultrarunning.com/calendar/event/the-north-face-endurance-challenge-new-york/race/19052/results#1932394',               notes:'', badges:[] },
+  // 2017
+  { id:23, year:'2017', name:'Lycian Way Ultra Marathon (LYUM)',             dist:'other',distMi:null,  date:'Sep 2017',       location:'Fethiye–Antalya, Turkey', time:'DNF', overall:'', division:'', url:'https://likyayoluultramaratonu.com/EN/?p=Results', notes:'6-day stage race · Day 1: 6:30:33 · Day 2: 9:04:07 · Day 3: 9:54:32 · DNF Day 4', badges:[{label:'Stage Race',cls:'badge-blue'},{label:'DNF',cls:'badge-red'},{label:'🇹🇷 Turkey',cls:'badge-teal'}] },
   // 2016
   { id:5,  year:'2016', name:'3 Days at the Fair',                           dist:'timed',distMi:36,    date:'May 12th 2016',  location:'Augusta, NJ',      time:'36 mi',     overall:'49 / 52',  division:'31 / 33',  url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/13267/results#1611620',                                              notes:'24-hour event', badges:[{label:'24 Hours',cls:'badge-purple'}] },
   // 2015
@@ -571,9 +573,11 @@ const DIST_CLASS  = { '50k':'dist-50k','60k':'dist-60k','50m':'dist-50m','100k':
 const DIST_MILES  = { '50k':31.1,'60k':37.3,'50m':50,'100k':62.1,'100m':100,'timed':null };
 
 function loadRaces() {
-  const raw = localStorage.getItem('ultras_v3');
-  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
-  localStorage.setItem('ultras_v3', JSON.stringify(SEED_RACES));
+  try {
+    const raw = localStorage.getItem('ultras_v3');
+    if (raw) { const parsed = JSON.parse(raw); if (parsed && parsed.length) return parsed; }
+    localStorage.setItem('ultras_v3', JSON.stringify(SEED_RACES));
+  } catch(e) {}
   return JSON.parse(JSON.stringify(SEED_RACES));
 }
 
