@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sub-Marathon Log — Fatih Karakurt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #131615;
+    --border: #1e2420;
+    --border-bright: #2e3830;
+    --text: #c8d4c0;
+    --text-dim: #5a6856;
+    --text-muted: #3a4238;
+    --green: #4caf6e;
+    --green-dim: #1e3a28;
+    --amber: #e8a840;
+    --amber-dim: #3a2a10;
+    --red: #e05a4a;
+    --red-dim: #3a1a14;
+    --blue: #5a9ed8;
+    --blue-dim: #1a2a3a;
+    --teal: #3ab8a8;
+    --teal-dim: #0e2a26;
+    --pink: #d86ea8;
+    --pink-dim: #2a1020;
+    --accent: #5ab8d8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: #fff;
+  }
+
+  .header-left h1 span { color: var(--accent); }
+
+  .header-left p {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 32px;
+    padding-bottom: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .stat { text-align: right; }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* ── Distance tabs ── */
+  .distance-nav {
+    padding: 0 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .distance-nav::-webkit-scrollbar { display: none; }
+
+  .distance-tab {
+    padding: 16px 22px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    background: none;
+    border-top: none; border-left: none; border-right: none;
+    outline: none;
+  }
+  .distance-tab:hover { color: var(--text); }
+  .distance-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Main ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+
+  /* ── Table ── */
+  .race-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 48px;
+  }
+
+  .race-table th {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 16px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .race-table th:last-child { text-align: right; }
+
+  .race-row {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .race-row:hover { background: #121a1e; }
+
+  .race-row td {
+    padding: 16px 16px;
+    vertical-align: middle;
+  }
+  .race-row td:last-child { text-align: right; }
+
+  .td-year {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    width: 72px;
+  }
+
+  .td-dist { width: 72px; }
+
+  .dist-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .dist-5k   { background: var(--green-dim);  color: var(--green); }
+  .dist-8k   { background: var(--teal-dim);   color: var(--teal); }
+  .dist-10k  { background: var(--blue-dim);   color: var(--blue); }
+  .dist-15k  { background: var(--amber-dim);  color: var(--amber); }
+  .dist-half { background: var(--pink-dim);   color: var(--pink); }
+  .dist-10m  { background: var(--red-dim);    color: var(--red); }
+  .dist-20k  { background: #1a2010;           color: #8ab848; }
+  .dist-other{ background: #1a1a2a;           color: #8888cc; }
+
+  .race-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #e8ece4;
+    margin-bottom: 3px;
+  }
+  .race-name a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .race-name a:hover { color: var(--accent); }
+
+  .race-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .badge-teal   { background: var(--teal-dim);  color: var(--teal); }
+  .badge-amber  { background: var(--amber-dim); color: var(--amber); }
+  .badge-red    { background: var(--red-dim);   color: var(--red); }
+  .badge-blue   { background: var(--blue-dim);  color: var(--blue); }
+  .badge-green  { background: var(--green-dim); color: var(--green); }
+  .badge-pink   { background: var(--pink-dim);  color: var(--pink); }
+  .badge-accent { background: #0e1e28;          color: var(--accent); }
+
+  .td-time { width: 150px; }
+
+  .time-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: var(--accent);
+  }
+  .time-place {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+  .time-add {
+    font-size: 12px;
+    color: var(--text-muted);
+    border: 1px dashed var(--border-bright);
+    padding: 4px 10px;
+    border-radius: 3px;
+    transition: border-color 0.15s, color 0.15s;
+    background: none;
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+  }
+  .time-add:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── Add row ── */
+  .add-row td { padding: 12px 16px; }
+
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border-bright);
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .add-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.78);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #121a1e;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 500px;
+    padding: 32px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .modal-field { display: flex; flex-direction: column; gap: 6px; }
+  .modal-field.full { grid-column: 1 / -1; }
+
+  .modal-field label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .modal-field input,
+  .modal-field select,
+  .modal-field textarea {
+    background: var(--bg);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+    resize: none;
+  }
+  .modal-field input:focus,
+  .modal-field select:focus,
+  .modal-field textarea:focus { border-color: var(--accent); }
+  .modal-field select option { background: #0d0f0e; }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 22px;
+    align-items: center;
+  }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 9px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: var(--text); }
+
+  .btn-save {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #0d0f0e;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 24px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+
+  .btn-delete {
+    background: none;
+    border: none;
+    color: var(--red);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: auto;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+    padding: 0;
+  }
+  .btn-delete:hover { opacity: 1; }
+
+  /* ── Responsive ── */
+  @media (max-width: 680px) {
+    header, main { padding-left: 16px; padding-right: 16px; }
+    .distance-nav { padding: 0 16px; }
+    .header-stats { gap: 18px; }
+    .stat-value { font-size: 28px; }
+    .td-dist { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>SUB<span>LOG</span></h1>
+    <p>Fatih Karakurt · 5K to Half Marathon</p>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-value" id="stat-years">—</div>
+      <div class="stat-label">Years Active</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-races">—</div>
+      <div class="stat-label">Races</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-timed">—</div>
+      <div class="stat-label">With Times</div>
+    </div>
+  </div>
+</header>
+
+<nav class="distance-nav">
+  <button class="distance-tab active" data-filter="all">All</button>
+  <button class="distance-tab" data-filter="half">Half Marathon</button>
+  <button class="distance-tab" data-filter="other">Other</button>
+</nav>
+
+<main>
+  <div class="section-header">
+    <div class="section-title">Race History</div>
+  </div>
+  <table class="race-table" id="raceTable">
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Dist</th>
+        <th>Race</th>
+        <th style="text-align:right">Time / Place</th>
+      </tr>
+    </thead>
+    <tbody id="raceBody"></tbody>
+  </table>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Edit Race</h2>
+    <div class="modal-grid">
+      <div class="modal-field full">
+        <label>Race Name</label>
+        <input type="text" id="inputName">
+      </div>
+      <div class="modal-field">
+        <label>Year</label>
+        <input type="text" id="inputYear">
+      </div>
+      <div class="modal-field">
+        <label>Distance</label>
+        <select id="inputDist">
+          <option value="5k">5K</option>
+          <option value="8k">8K</option>
+          <option value="10k">10K</option>
+          <option value="15k">15K</option>
+          <option value="20k">20K</option>
+          <option value="10m">10 Mile</option>
+          <option value="half">Half Marathon</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Date</label>
+        <input type="text" id="inputDate" placeholder="Jan 1st 2024">
+      </div>
+      <div class="modal-field">
+        <label>Location</label>
+        <input type="text" id="inputLocation" placeholder="City, ST">
+      </div>
+      <div class="modal-field">
+        <label>Finish Time</label>
+        <input type="text" id="inputTime" placeholder="1:52:34">
+      </div>
+      <div class="modal-field">
+        <label>Overall Place</label>
+        <input type="text" id="inputOverall" placeholder="123 / 4567">
+      </div>
+      <div class="modal-field">
+        <label>Division Place</label>
+        <input type="text" id="inputDivision" placeholder="45 / 678">
+      </div>
+      <div class="modal-field full">
+        <label>Results URL</label>
+        <input type="text" id="inputUrl" placeholder="https://results.nyrr.org/...">
+      </div>
+      <div class="modal-field full">
+        <label>Notes</label>
+        <textarea id="inputNotes" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-delete" id="btnDelete" onclick="deleteRace()">Delete</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveRace()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DIST_LABELS = { '5k':'5K','8k':'8K','10k':'10K','15k':'15K','20k':'20K','10m':'10M','half':'HALF','other':'—' };
+const DIST_CLASS  = { '5k':'dist-5k','8k':'dist-8k','10k':'dist-10k','15k':'dist-15k','20k':'dist-20k','10m':'dist-10m','half':'dist-half','other':'dist-other' };
+const MONTHS = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+
+const SEED = [
+  { id:22, year:'2008', name:'Long Branch Half Marathon',    dist:'half', date:'May 4th 2008',   location:'Long Branch, NJ', time:null, overall:'', division:'', url:'https://www.athlinks.com/event/5179', notes:'NJ Marathon weekend', badges:[] },
+  { id:17, year:'2009', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 27th 2009', location:'Jersey City, NJ', time:'1:52:31', overall:'539 / 1569', division:'63 / 135', url:'https://www.athlinks.com/event/5182/results/Event/91801/Course/129110/Results', notes:'Pace 8:35/mi · M 40-44', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:16, year:'2008', name:'Newport-Liberty Waterfront Run Half Marathon', dist:'half', date:'Sep 28th 2008', location:'Jersey City, NJ', time:'1:53:23', overall:'503 / 1331', division:'66 / 128', url:'https://www.athlinks.com/event/5182/results/Event/64964/Course/97102/Results', notes:'Pace 8:39/mi · M 40-44', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:20, year:'2018', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 16th 2018',  location:'Jersey City, NJ', time:'1:58:35', overall:'641 / 2355', division:'42 / 102', url:'https://www.athlinks.com/event/5182/results/Event/756679/Course/1239239/Results', notes:'Pace 9:03/mi · M 50-54', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:19, year:'2017', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 17th 2017',  location:'Jersey City, NJ', time:'1:44:26', overall:'341 / 2514', division:'22 / 99', url:'https://www.athlinks.com/event/5182/results/Event/603790/Course/914401/Results', notes:'Pace 7:58/mi · M 50-54', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:23, year:'2015', name:'BolderBOULDER 10K',            dist:'10k',  date:'May 25th 2015', location:'Boulder, CO',      time:'46:27', overall:'2127', division:'26', url:'https://www.athlinks.com/event/6172', notes:'Bib DA349 · M overall 1755', badges:[] },
+  { id:18, year:'2014', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 21st 2014',  location:'Jersey City, NJ', time:'2:11:35', overall:'1615 / 2782', division:'116 / 174', url:'https://www.athlinks.com/event/5182/results/Event/366659/Course/539965/Results', notes:'Pace 10:03/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:15, year:'2010', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 2010',       location:'Jersey City, NJ', time:'1:47:35', overall:'', division:'', url:'', notes:'Bib 1082', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:14, year:'2011', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 25th 2011',  location:'Jersey City, NJ', time:'1:49:13', overall:'491 / 2219', division:'71 / 199', url:'https://www.athlinks.com/event/5182/results/Event/173429/Course/238511/Results', notes:'Pace 8:20/mi · M 40-44', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:13, year:'2012', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 23rd 2012',  location:'Jersey City, NJ', time:'1:41:22', overall:'435 / 2634', division:'40 / 149', url:'https://www.athlinks.com/event/5182/results/Event/199697/Course/276604/Results', notes:'Pace 7:44/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:24, year:'2013', name:'Riker Danzig Newport 10,000',  dist:'10k',  date:'May 11th 2013', location:'Jersey City, NJ', time:null, overall:'', division:'', url:'', notes:'', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:12, year:'2013', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 22nd 2013',  location:'Jersey City, NJ', time:'3:24:00', overall:'2692 / 2697', division:'142 / 142', url:'https://www.athlinks.com/event/5182/results/Event/314557/Course/451972/Results', notes:'Pace 15:34/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:11, year:'2015', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 20th 2015',  location:'Jersey City, NJ', time:'1:43:12', overall:'379 / 2087', division:'33 / 128', url:'https://www.athlinks.com/event/5182/results/Event/479348/Course/713255/Results', notes:'Pace 7:53/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:21, year:'2024', name:'New Jersey Half Marathon & 5K at Newport', dist:'half', date:'Sep 28th 2024', location:'Jersey City, NJ', time:'1:50:09', overall:'753 / 4065', division:'28 / 171', url:'https://www.athlinks.com/event/5182/results/Event/1093195/Course/2526726/Results', notes:'Pace 8:25/mi · M 50-59', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:10, year:'2016', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 18th 2016',  location:'Jersey City, NJ', time:'2:06:10', overall:'1068 / 2549', division:'92 / 159', url:'https://www.athlinks.com/event/5182/results/Event/530346/Course/788233/Results', notes:'Pace 9:38/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:1,  year:'2012', name:'NYC Half Marathon',           dist:'half',  date:'Mar 18th 2012', location:'New York, NY',      time:'1:41:17', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 4340 · Pace 7:44/mi', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:2,  year:'2011', name:'Staten Island Half Marathon', dist:'half',  date:'Oct 9th 2011',  location:'Staten Island, NY', time:'1:41:08', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 1397 · Pace 7:43/mi', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:3,  year:'2011', name:'Portugal Day 5M',             dist:'other', date:'Jun 19th 2011', location:'New York, NY',      time:'0:36:54', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 1393 · Pace 7:23/mi · 5 miles', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:4,  year:'2011', name:'NYRR 4-Mile',                 dist:'other', date:'Apr 23rd 2011', location:'New York, NY',      time:'0:28:29', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 1367 · Pace 7:07/mi · 4 miles', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:5,  year:'2011', name:'New York CCC 4M',             dist:'other', date:'Mar 27th 2011', location:'New York, NY',      time:'0:29:17', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 1363 · Pace 7:19/mi · 4 miles', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:6,  year:'2011', name:"Coogan's Salsa, Blues & Shamrocks 5K", dist:'5k', date:'Mar 6th 2011', location:'New York, NY', time:'0:23:15', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 4389 · Pace 7:30/mi', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:7,  year:'2011', name:'NYRR Al Gordon Classic 4M',   dist:'other', date:'Feb 26th 2011', location:'New York, NY',      time:'0:32:07', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 4262 · Pace 8:01/mi · 4 miles', badges:[{label:'NYRR',cls:'badge-accent'}] },
+  { id:8,  year:'2011', name:'NYRR Manhattan Half-Marathon', dist:'half', date:'Jan 22nd 2011', location:'Manhattan, NY',     time:'1:52:15', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 7352 · Pace 8:34/mi', badges:[{label:'NYRR',cls:'badge-accent'}] },
+];
+
+function loadRaces() {
+  const raw = localStorage.getItem('subs_v24');
+  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+  localStorage.setItem('subs_v24', JSON.stringify(SEED));
+  return JSON.parse(JSON.stringify(SEED));
+}
+
+function saveRaces(arr) { localStorage.setItem('subs_v24', JSON.stringify(arr)); }
+
+function computeStats(races) {
+  const years = new Set(races.map(r => r.year)).size;
+  const timed = races.filter(r => r.time).length;
+  document.getElementById('stat-years').textContent = years || '—';
+  document.getElementById('stat-races').textContent = races.length || '—';
+  document.getElementById('stat-timed').textContent = timed || '—';
+}
+
+let activeFilter = 'all';
+
+function parseRaceDate(r) {
+  const m = (r.date || '').match(/(\w+)\s+\d+\w*\s+(\d{4})/);
+  if (m) {
+    const mon = MONTHS[m[1].toLowerCase().slice(0,3)];
+    return new Date(+m[2], mon ?? 0);
+  }
+  return new Date(+r.year || 0, 0);
+}
+
+function renderTable() {
+  const races = loadRaces();
+  computeStats(races);
+  const NON_HALF = ['5k','8k','10k','15k','20k','10m','other'];
+  const filtered = activeFilter === 'all' ? races
+    : activeFilter === 'half' ? races.filter(r => r.dist === 'half')
+    : races.filter(r => NON_HALF.includes(r.dist));
+  const sorted = [...filtered].sort((a, b) => parseRaceDate(b) - parseRaceDate(a));
+  const tbody = document.getElementById('raceBody');
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = `
+      <tr><td colspan="4" style="padding:48px 16px;color:var(--text-muted);font-style:italic;font-size:13px">
+        No races yet — add your first below, or paste in your results.
+      </td></tr>
+      <tr class="add-row"><td colspan="4"><button class="add-btn" onclick="openModal(null,event)">＋ Add Race</button></td></tr>`;
+    return;
+  }
+
+  let html = '';
+  for (const r of sorted) {
+    const distCls   = DIST_CLASS[r.dist]  || 'dist-other';
+    const distLabel = DIST_LABELS[r.dist] || '—';
+    const badgesHtml = (r.badges||[]).map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join('');
+    const nameHtml = r.url
+      ? `<a href="${r.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${r.name}</a>`
+      : r.name;
+
+    let resultHtml = r.time
+      ? `<div class="time-val">${r.time}</div>`
+      : `<span class="time-add" onclick="openModal(${r.id},event)">+ Log time</span>`;
+    if (r.overall)  resultHtml += `<div class="time-place">Overall: ${r.overall}</div>`;
+    if (r.division) resultHtml += `<div class="time-place">M: ${r.division}</div>`;
+
+    html += `
+    <tr class="race-row" onclick="openModal(${r.id})">
+      <td class="td-year">${r.year}</td>
+      <td class="td-dist"><span class="dist-pill ${distCls}">${distLabel}</span></td>
+      <td>
+        <div class="race-name">${nameHtml}</div>
+        <div class="race-meta">${[r.date, r.location].filter(Boolean).join(' · ')}</div>
+        ${r.notes ? `<div class="race-meta" style="margin-top:3px;font-style:italic;opacity:.7">${r.notes}</div>` : ''}
+        ${badgesHtml ? `<div class="badge-row">${badgesHtml}</div>` : ''}
+      </td>
+      <td class="td-time">${resultHtml}</td>
+    </tr>`;
+  }
+  html += `<tr class="add-row"><td colspan="4"><button class="add-btn" onclick="openModal(null,event)">＋ Add Race</button></td></tr>`;
+  tbody.innerHTML = html;
+}
+
+let editingId = null;
+
+function openModal(id, event) {
+  if (event) event.stopPropagation();
+  editingId = id;
+  const races = loadRaces();
+  document.getElementById('btnDelete').style.display = id === null ? 'none' : 'inline-block';
+  document.getElementById('modalTitle').textContent = id === null ? 'Add Race' : 'Edit Race';
+
+  if (id === null) {
+    ['inputName','inputYear','inputDate','inputLocation','inputTime','inputOverall','inputDivision','inputUrl','inputNotes'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('inputYear').value = new Date().getFullYear();
+    document.getElementById('inputDist').value = 'half';
+  } else {
+    const r = races.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('inputName').value     = r.name     || '';
+    document.getElementById('inputYear').value     = r.year     || '';
+    document.getElementById('inputDist').value     = r.dist     || 'half';
+    document.getElementById('inputDate').value     = r.date     || '';
+    document.getElementById('inputLocation').value = r.location || '';
+    document.getElementById('inputTime').value     = r.time     || '';
+    document.getElementById('inputOverall').value  = r.overall  || '';
+    document.getElementById('inputDivision').value = r.division || '';
+    document.getElementById('inputUrl').value      = r.url      || '';
+    document.getElementById('inputNotes').value    = r.notes    || '';
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+function saveRace() {
+  let races = loadRaces();
+  const entry = {
+    year:     document.getElementById('inputYear').value.trim(),
+    name:     document.getElementById('inputName').value.trim() || 'Unnamed Race',
+    dist:     document.getElementById('inputDist').value,
+    date:     document.getElementById('inputDate').value.trim(),
+    location: document.getElementById('inputLocation').value.trim(),
+    time:     document.getElementById('inputTime').value.trim() || null,
+    overall:  document.getElementById('inputOverall').value.trim(),
+    division: document.getElementById('inputDivision').value.trim(),
+    url:      document.getElementById('inputUrl').value.trim(),
+    notes:    document.getElementById('inputNotes').value.trim(),
+    badges:   [],
+  };
+  if (editingId === null) {
+    entry.id = Date.now();
+    races.push(entry);
+  } else {
+    races = races.map(r => r.id === editingId ? { ...r, ...entry, id: r.id } : r);
+  }
+  saveRaces(races);
+  renderTable();
+  closeModal();
+}
+
+function deleteRace() {
+  if (editingId === null) return;
+  if (!confirm('Remove this race?')) return;
+  saveRaces(loadRaces().filter(r => r.id !== editingId));
+  renderTable();
+  closeModal();
+}
+
+document.querySelectorAll('.distance-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.distance-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderTable();
+  });
+});
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+renderTable();
+</script>
+</body>
+</html>
