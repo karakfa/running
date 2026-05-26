@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marathon Log — Fatih Karakurt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #131615;
+    --border: #1e2420;
+    --border-bright: #2e3830;
+    --text: #c8d4c0;
+    --text-dim: #5a6856;
+    --text-muted: #3a4238;
+    --green: #4caf6e;
+    --green-dim: #1e3a28;
+    --amber: #e8a840;
+    --amber-dim: #3a2a10;
+    --red: #e05a4a;
+    --blue: #5a9ed8;
+    --blue-dim: #1a2a3a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: #fff;
+  }
+
+  .header-left h1 span {
+    color: var(--green);
+  }
+
+  .header-left p {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 32px;
+    padding-bottom: 4px;
+  }
+
+  .stat {
+    text-align: right;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* ── Timeline ── */
+  .timeline {
+    padding: 48px 40px;
+    max-width: 1100px;
+  }
+
+  .race-card {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 32px;
+    margin-bottom: 0;
+    position: relative;
+  }
+
+  /* connector line */
+  .race-card:not(:last-child) .year-col::after {
+    content: '';
+    position: absolute;
+    left: 39px;
+    top: 72px;
+    bottom: -48px;
+    width: 1px;
+    background: var(--border-bright);
+  }
+
+  .year-col {
+    position: relative;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .year-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--green);
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .year-dot.unknown {
+    background: var(--bg);
+    box-shadow: 0 0 0 2px var(--text-dim);
+  }
+
+  .year-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    writing-mode: horizontal-tb;
+  }
+
+  .card-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+    transition: border-color 0.2s;
+  }
+
+  .card-body:hover {
+    border-color: var(--border-bright);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .race-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.06em;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .race-date {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .finish-time {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .finish-time .time-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 0.04em;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .finish-time .time-value.unknown {
+    font-size: 18px;
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    padding-top: 8px;
+  }
+
+  .finish-time .time-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: right;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .card-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .mini-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mini-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  .mini-stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .mini-stat-value.dim {
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  .badge-green {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid #2a5038;
+  }
+
+  .badge-amber {
+    background: var(--amber-dim);
+    color: var(--amber);
+    border: 1px solid #5a4020;
+  }
+
+  .badge-blue {
+    background: var(--blue-dim);
+    color: var(--blue);
+    border: 1px solid #2a4060;
+  }
+
+  .badge-dim {
+    background: #1a1e1c;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Map watermark ── */
+  .continent-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    padding: 2px 8px;
+    border-left: 2px solid var(--border-bright);
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+
+  /* ── Footer ── */
+  footer {
+    padding: 32px 40px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 36px 20px 28px; }
+    .timeline { padding: 32px 20px; }
+    .race-card { grid-template-columns: 52px 1fr; gap: 0 16px; }
+    .card-top { flex-direction: column; }
+    .finish-time { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>MARATHON<br><span>LOG</span></h1>
+    <p>Fatih Karakurt · 26.2 miles each</p>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-value">4</div>
+      <div class="stat-label">Finishes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Countries</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">18</div>
+      <div class="stat-label">Years</div>
+    </div>
+  </div>
+</header>
+
+<div class="timeline">
+
+  <!-- Jersey City 2026 -->
+  <div class="race-card">
+    <div class="year-col">
+      <div class="year-dot"></div>
+      <div class="year-text">2026</div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div>
+          <div class="continent-label">North America</div>
+          <div class="race-title">Jersey City Marathon</div>
+          <div class="race-date">May 2026 · Jersey City, NJ</div>
+        </div>
+        <div class="finish-time">
+          <div class="time-value">4:18:51</div>
+          <div class="time-label">Finish Time</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Pace</div>
+          <div class="mini-stat-value">9:53 / mi</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Overall</div>
+          <div class="mini-stat-value">2,106 / 3,108</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Age Group (M 55–59)</div>
+          <div class="mini-stat-value">45 / 74</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Bib</div>
+          <div class="mini-stat-value">#2501</div>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge badge-blue">Boston Qualifier Course</span>
+        <span class="badge badge-green">3,108 Finishers</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Istanbul 2014 -->
+  <div class="race-card">
+    <div class="year-col">
+      <div class="year-dot"></div>
+      <div class="year-text">2014</div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div>
+          <div class="continent-label">Europe / Asia</div>
+          <div class="race-title">İstanbul Maratonu</div>
+          <div class="race-date">November 16, 2014 · Istanbul, Turkey</div>
+        </div>
+        <div class="finish-time">
+          <div class="time-value unknown">Time unknown</div>
+          <div class="time-label">result not found</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Pace</div>
+          <div class="mini-stat-value dim">—</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Bib</div>
+          <div class="mini-stat-value">#4983</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Unique Feature</div>
+          <div class="mini-stat-value">Spans 2 continents</div>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge badge-amber">Europe ↔ Asia</span>
+        <span class="badge badge-amber">Bosphorus Bridge</span>
+        <span class="badge badge-dim">Time Not Found</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- New York City 2013 -->
+  <div class="race-card">
+    <div class="year-col">
+      <div class="year-dot"></div>
+      <div class="year-text">2013</div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div>
+          <div class="continent-label">North America</div>
+          <div class="race-title">ING New York City Marathon</div>
+          <div class="race-date">November 3, 2013 · New York, NY</div>
+        </div>
+        <div class="finish-time">
+          <div class="time-value">3:54:23</div>
+          <div class="time-label">Official Time</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Pace</div>
+          <div class="mini-stat-value">8:57 / mi</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Overall</div>
+          <div class="mini-stat-value">12,898 / 50,135</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Gender (M)</div>
+          <div class="mini-stat-value">10,263 / 30,587</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Age Group (M 45–49)</div>
+          <div class="mini-stat-value">1,527 / 4,745</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Gun Time</div>
+          <div class="mini-stat-value">4:40:41</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Bib</div>
+          <div class="mini-stat-value">#37341</div>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge badge-blue">World Marathon Major</span>
+        <span class="badge badge-amber">Post-Sandy Return Race</span>
+        <span class="badge badge-green">50,135 Finishers</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- San Diego 2008 -->
+  <div class="race-card">
+    <div class="year-col">
+      <div class="year-dot"></div>
+      <div class="year-text">2008</div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div>
+          <div class="continent-label">North America</div>
+          <div class="race-title">San Diego Rock 'n' Roll Marathon</div>
+          <div class="race-date">May 31, 2008 · San Diego, CA</div>
+        </div>
+        <div class="finish-time">
+          <div class="time-value">4:43:37</div>
+          <div class="time-label">Chip Time</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Chip Time</div>
+          <div class="mini-stat-value">4:43:37</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Gun Time</div>
+          <div class="mini-stat-value">4:53:13</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Overall Place</div>
+          <div class="mini-stat-value">7,067</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Pace</div>
+          <div class="mini-stat-value">10:51 / mi</div>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge badge-amber">Rock 'n' Roll Series</span>
+        <span class="badge badge-green">Confirmed Result</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  marathons.html · last updated May 2026 · 4 races across 3 countries
+</footer>
+
+</body>
+</html>
