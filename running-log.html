@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Running Log — Fatih Karakurt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --border: #e2ddd6;
+    --text: #1a1916;
+    --muted: #7a7670;
+    --accent: #c8401a;
+    --accent-light: #fdf0ec;
+    --green: #2a6b3c;
+    --green-light: #eaf3ee;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  .site-header {
+    background: var(--text);
+    color: #fff;
+    padding: 2.5rem 2rem 2rem;
+  }
+  .site-header h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .site-header .sub {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: #888;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    background: var(--accent);
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item { color: #fff; }
+  .stat-item .num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    font-family: var(--mono);
+  }
+  .stat-item .lbl {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-top: 2px;
+  }
+
+  /* Tabs */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Content */
+  .tab-content { display: none; padding: 2rem; max-width: 900px; }
+  .tab-content.active { display: block; }
+
+  /* Race cards */
+  .race-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  .race-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem 1rem;
+    gap: 1rem;
+  }
+  .race-year-badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--text);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .race-title { font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
+  .race-meta { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+  .race-time {
+    font-family: var(--mono);
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-align: right;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .race-time-lbl { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-align: right; margin-top: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .race-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-top: 1px solid var(--border);
+  }
+  .race-stat {
+    flex: 1 1 120px;
+    padding: 0.75rem 1.5rem;
+    border-right: 1px solid var(--border);
+  }
+  .race-stat:last-child { border-right: none; }
+  .race-stat .rs-val { font-family: var(--mono); font-size: 0.9rem; font-weight: 500; }
+  .race-stat .rs-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+
+  .race-badge {
+    margin: 0 1.5rem 1rem;
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+  }
+  .badge-major { background: var(--accent-light); color: var(--accent); }
+  .badge-intl { background: var(--green-light); color: var(--green); }
+  .badge-series { background: #f0edf8; color: #5a3fa0; }
+  .badge-bq { background: #fff8e6; color: #8b5e00; }
+
+  /* Splits */
+  .splits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .split-cell {
+    padding: 0.6rem 1rem;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .split-cell .sp-dist { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .split-cell .sp-time { font-family: var(--mono); font-size: 0.85rem; font-weight: 500; margin-top: 2px; }
+
+  /* Table for subs/ultras */
+  .log-table-wrap { overflow-x: auto; margin-bottom: 1.5rem; }
+  table.log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  table.log-table th {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    white-space: nowrap;
+  }
+  table.log-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  table.log-table tr:last-child td { border-bottom: none; }
+  table.log-table tr:hover td { background: var(--bg); }
+  .td-year { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+  .td-dist { font-family: var(--mono); font-size: 0.75rem; background: var(--border); padding: 2px 7px; border-radius: 2px; white-space: nowrap; }
+  .td-time { font-family: var(--mono); font-weight: 500; }
+  .td-link { color: var(--accent); text-decoration: none; font-size: 0.8rem; }
+  .td-link:hover { text-decoration: underline; }
+  .edit-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.8rem; padding: 2px 6px; border-radius: 2px; }
+  .edit-btn:hover { background: var(--bg); color: var(--text); }
+
+  /* Add / form */
+  .add-btn {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .add-btn:hover { background: var(--accent); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; }
+  .form-row { margin-bottom: 1rem; }
+  .form-row label { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .form-row input:focus, .form-row select:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+  .btn-save {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.8rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .btn-cancel, .btn-delete {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    background: none;
+    border: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .btn-delete { color: #c00; border-color: #fcc; }
+  .btn-delete:hover { background: #fff0f0; }
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+  .empty-state .big { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  /* Section label */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* All tab grid */
+  .all-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 600px) { .all-grid { grid-template-columns: 1fr; } }
+  .all-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .all-card:hover { border-color: var(--accent); }
+  .all-card .ac-type {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+  .all-card .ac-type.marathon { color: var(--accent); }
+  .all-card .ac-type.ultra { color: var(--green); }
+  .all-card .ac-type.sub { color: #5a3fa0; }
+  .all-card .ac-name { font-size: 0.95rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.25rem; }
+  .all-card .ac-detail { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+  .all-card .ac-time { font-family: var(--mono); font-size: 1.3rem; font-weight: 500; color: var(--accent); margin-top: 0.5rem; }
+
+  /* filter pills */
+  .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .filter-pill {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.12s;
+  }
+  .filter-pill.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  @media (max-width: 640px) {
+    .site-header { padding: 1.5rem 1rem 1.25rem; }
+    .stats-bar { padding: 0.75rem 1rem; gap: 1.5rem; }
+    .tab-nav { padding: 0 1rem; }
+    .tab-content { padding: 1.25rem 1rem; }
+    .race-card-header { flex-direction: column; }
+    .race-time { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>Running Log</h1>
+  <p class="sub">Fatih Karakurt · All distances</p>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat-item"><div class="num" id="statRaces">—</div><div class="lbl">Total Races</div></div>
+  <div class="stat-item"><div class="num" id="statMarathons">4</div><div class="lbl">Marathons</div></div>
+  <div class="stat-item"><div class="num" id="statUltras">—</div><div class="lbl">Ultras</div></div>
+  <div class="stat-item"><div class="num" id="statSubs">—</div><div class="lbl">Sub-HM</div></div>
+  <div class="stat-item"><div class="num">2</div><div class="lbl">Countries</div></div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="all">All</button>
+  <button class="tab-btn" data-tab="sub">SubHM</button>
+  <button class="tab-btn" data-tab="hm">HM</button>
+  <button class="tab-btn" data-tab="marathon">Marathon</button>
+  <button class="tab-btn" data-tab="ultra">Ultra</button>
+</nav>
+
+<!-- ALL TAB -->
+<section class="tab-content active" id="tab-all">
+  <div class="filter-row">
+    <button class="filter-pill active" data-filter="all">All</button>
+    <button class="filter-pill" data-filter="marathon">Marathon</button>
+    <button class="filter-pill" data-filter="ultra">Ultra</button>
+    <button class="filter-pill" data-filter="hm">Half Marathon</button>
+    <button class="filter-pill" data-filter="sub">Sub-HM</button>
+  </div>
+  <div class="all-grid" id="allGrid"></div>
+</section>
+
+<!-- SUBHM TAB -->
+<section class="tab-content" id="tab-sub">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+    <div class="section-label" style="margin:0; border:none;">Sub-half marathon races · 5K to 10 Mile</div>
+    <button class="add-btn" onclick="openSubModal()">+ Add Race</button>
+  </div>
+  <div class="filter-row" id="subFilterRow">
+    <button class="filter-pill active" data-subfilter="all">All</button>
+    <button class="filter-pill" data-subfilter="5K">5K</button>
+    <button class="filter-pill" data-subfilter="8K">8K</button>
+    <button class="filter-pill" data-subfilter="10K">10K</button>
+    <button class="filter-pill" data-subfilter="15K">15K</button>
+    <button class="filter-pill" data-subfilter="10 Mile">10 Mile</button>
+    <button class="filter-pill" data-subfilter="Other">Other</button>
+  </div>
+  <div class="log-table-wrap" id="subTableWrap"></div>
+</section>
+
+<!-- HM TAB -->
+<section class="tab-content" id="tab-hm">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+    <div class="section-label" style="margin:0; border:none;">Half marathon races · 13.1 miles</div>
+    <button class="add-btn" onclick="openHMModal()">+ Add Race</button>
+  </div>
+  <div class="log-table-wrap" id="hmTableWrap"></div>
+</section>
+
+<!-- MARATHON TAB -->
+<section class="tab-content" id="tab-marathon">
+  <div class="section-label">26.2 miles each · 4 finishes · 2 countries</div>
+
+  <!-- 2026 -->
+  <div class="race-card">
+    <div class="race-card-header">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="race-year-badge">2026</span>
+          <span style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">North America</span>
+        </div>
+        <div class="race-title">Jersey City Marathon</div>
+        <div class="race-meta">May 2026 · Jersey City, NJ · Bib #2501</div>
+      </div>
+      <div>
+        <div class="race-time">4:18:51</div>
+        <div class="race-time-lbl">Finish Time</div>
+      </div>
+    </div>
+    <div class="race-stats">
+      <div class="race-stat"><div class="rs-val">9:53 / mi</div><div class="rs-lbl">Pace</div></div>
+      <div class="race-stat"><div class="rs-val">2,106 / 3,108</div><div class="rs-lbl">Overall</div></div>
+      <div class="race-stat"><div class="rs-val">45 / 74</div><div class="rs-lbl">Age Group M 55–59</div></div>
+    </div>
+    <span class="race-badge badge-bq">Boston Qualifier Course · 3,108 Finishers</span>
+  </div>
+
+  <!-- 2014 -->
+  <div class="race-card">
+    <div class="race-card-header">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="race-year-badge">2014</span>
+          <span style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">Europe / Asia</span>
+        </div>
+        <div class="race-title">İstanbul Maratonu</div>
+        <div class="race-meta">November 16, 2014 · Istanbul, Turkey · Bib #4983</div>
+      </div>
+      <div>
+        <div class="race-time">3:56:01</div>
+        <div class="race-time-lbl">Finish Time</div>
+      </div>
+    </div>
+    <div class="race-stats">
+      <div class="race-stat"><div class="rs-val">9:01 / mi</div><div class="rs-lbl">Pace</div></div>
+      <div class="race-stat"><div class="rs-val">1,237</div><div class="rs-lbl">Overall</div></div>
+      <div class="race-stat"><div class="rs-val">TUR</div><div class="rs-lbl">Country</div></div>
+    </div>
+    <span class="race-badge badge-intl">Europe ↔ Asia · Bosphorus Bridge · Confirmed Result</span>
+    <div class="splits-grid">
+      <div class="split-cell"><div class="sp-dist">5 km</div><div class="sp-time">0:31:12</div></div>
+      <div class="split-cell"><div class="sp-dist">10 km</div><div class="sp-time">1:00:16</div></div>
+      <div class="split-cell"><div class="sp-dist">15 km</div><div class="sp-time">1:27:47</div></div>
+      <div class="split-cell"><div class="sp-dist">20 km</div><div class="sp-time">1:56:44</div></div>
+      <div class="split-cell"><div class="sp-dist">Half</div><div class="sp-time">2:02:45</div></div>
+      <div class="split-cell"><div class="sp-dist">25 km</div><div class="sp-time">2:24:33</div></div>
+      <div class="split-cell"><div class="sp-dist">30 km</div><div class="sp-time">2:52:02</div></div>
+      <div class="split-cell"><div class="sp-dist">35 km</div><div class="sp-time">3:19:29</div></div>
+      <div class="split-cell"><div class="sp-dist">40 km</div><div class="sp-time">3:44:28</div></div>
+    </div>
+  </div>
+
+  <!-- 2013 -->
+  <div class="race-card">
+    <div class="race-card-header">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="race-year-badge">2013</span>
+          <span style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">North America</span>
+        </div>
+        <div class="race-title">ING New York City Marathon</div>
+        <div class="race-meta">November 3, 2013 · New York, NY · Bib #37341</div>
+      </div>
+      <div>
+        <div class="race-time">3:54:23</div>
+        <div class="race-time-lbl">Official Time</div>
+      </div>
+    </div>
+    <div class="race-stats">
+      <div class="race-stat"><div class="rs-val">8:57 / mi</div><div class="rs-lbl">Pace</div></div>
+      <div class="race-stat"><div class="rs-val">12,898 / 50,135</div><div class="rs-lbl">Overall</div></div>
+      <div class="race-stat"><div class="rs-val">10,263 / 30,587</div><div class="rs-lbl">Gender (M)</div></div>
+      <div class="race-stat"><div class="rs-val">1,527 / 4,745</div><div class="rs-lbl">AG M 45–49</div></div>
+      <div class="race-stat"><div class="rs-val">4:40:41</div><div class="rs-lbl">Gun Time</div></div>
+    </div>
+    <span class="race-badge badge-major">World Marathon Major · Post-Sandy Return Race · 50,135 Finishers</span>
+  </div>
+
+  <!-- 2008 -->
+  <div class="race-card">
+    <div class="race-card-header">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="race-year-badge">2008</span>
+          <span style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">North America</span>
+        </div>
+        <div class="race-title">San Diego Rock 'n' Roll Marathon</div>
+        <div class="race-meta">May 31, 2008 · San Diego, CA</div>
+      </div>
+      <div>
+        <div class="race-time">4:43:37</div>
+        <div class="race-time-lbl">Chip Time</div>
+      </div>
+    </div>
+    <div class="race-stats">
+      <div class="race-stat"><div class="rs-val">10:51 / mi</div><div class="rs-lbl">Pace</div></div>
+      <div class="race-stat"><div class="rs-val">7,067</div><div class="rs-lbl">Overall</div></div>
+      <div class="race-stat"><div class="rs-val">4:53:13</div><div class="rs-lbl">Gun Time</div></div>
+    </div>
+    <span class="race-badge badge-series">Rock 'n' Roll Series · Confirmed Result</span>
+  </div>
+</section>
+
+<!-- ULTRA TAB -->
+<section class="tab-content" id="tab-ultra">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+    <div class="section-label" style="margin:0; border:none;">Beyond the marathon · 50K and beyond</div>
+    <button class="add-btn" onclick="openUltraModal()">+ Add Race</button>
+  </div>
+  <div class="filter-row" id="ultraFilterRow">
+    <button class="filter-pill active" data-ultrafilter="all">All</button>
+    <button class="filter-pill" data-ultrafilter="50K">50K</button>
+    <button class="filter-pill" data-ultrafilter="60K">60K</button>
+    <button class="filter-pill" data-ultrafilter="50 Miles">50 Miles</button>
+    <button class="filter-pill" data-ultrafilter="100K">100K</button>
+    <button class="filter-pill" data-ultrafilter="Timed Event">Timed</button>
+  </div>
+  <div class="log-table-wrap" id="ultraTableWrap"></div>
+</section>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="subModal">
+  <div class="modal">
+    <h3 id="subModalTitle">Add Sub-HM Race</h3>
+    <input type="hidden" id="subEditId">
+    <div class="form-row"><label>Race Name</label><input type="text" id="subName" placeholder="e.g. Brooklyn 10K"></div>
+    <div class="form-row"><label>Distance</label>
+      <select id="subDist">
+        <option>5K</option><option>8K</option><option>10K</option><option>15K</option><option>20K</option><option>10 Mile</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Year</label><input type="number" id="subYear" placeholder="2024"></div>
+    <div class="form-row"><label>Date</label><input type="text" id="subDate" placeholder="e.g. October 12, 2024"></div>
+    <div class="form-row"><label>Location</label><input type="text" id="subLocation" placeholder="e.g. Brooklyn, NY"></div>
+    <div class="form-row"><label>Finish Time</label><input type="text" id="subTime" placeholder="e.g. 52:14"></div>
+    <div class="form-row"><label>Overall Place</label><input type="text" id="subOverall" placeholder="e.g. 142 / 3200"></div>
+    <div class="form-row"><label>Division Place</label><input type="text" id="subDiv" placeholder="e.g. 18 / 240"></div>
+    <div class="form-row"><label>Results URL</label><input type="text" id="subUrl" placeholder="https://..."></div>
+    <div class="form-row"><label>Notes</label><input type="text" id="subNotes" placeholder="Optional notes"></div>
+    <div class="form-actions">
+      <button class="btn-delete" id="subDeleteBtn" onclick="deleteSubRace()" style="display:none">Delete</button>
+      <button class="btn-cancel" onclick="closeModal('subModal')">Cancel</button>
+      <button class="btn-save" onclick="saveSubRace()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="hmModal">
+  <div class="modal">
+    <h3 id="hmModalTitle">Add Half Marathon</h3>
+    <input type="hidden" id="hmEditId">
+    <div class="form-row"><label>Race Name</label><input type="text" id="hmName" placeholder="e.g. NYC Half"></div>
+    <div class="form-row"><label>Year</label><input type="number" id="hmYear" placeholder="2024"></div>
+    <div class="form-row"><label>Date</label><input type="text" id="hmDate" placeholder="e.g. March 17, 2024"></div>
+    <div class="form-row"><label>Location</label><input type="text" id="hmLocation" placeholder="e.g. New York, NY"></div>
+    <div class="form-row"><label>Finish Time</label><input type="text" id="hmTime" placeholder="e.g. 1:52:14"></div>
+    <div class="form-row"><label>Overall Place</label><input type="text" id="hmOverall" placeholder="e.g. 1,428 / 12,000"></div>
+    <div class="form-row"><label>Division Place</label><input type="text" id="hmDiv" placeholder="e.g. 180 / 2400"></div>
+    <div class="form-row"><label>Results URL</label><input type="text" id="hmUrl" placeholder="https://..."></div>
+    <div class="form-row"><label>Notes</label><input type="text" id="hmNotes" placeholder="Optional notes"></div>
+    <div class="form-actions">
+      <button class="btn-delete" id="hmDeleteBtn" onclick="deleteHMRace()" style="display:none">Delete</button>
+      <button class="btn-cancel" onclick="closeModal('hmModal')">Cancel</button>
+      <button class="btn-save" onclick="saveHMRace()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ultraModal">
+  <div class="modal">
+    <h3 id="ultraModalTitle">Add Ultra Race</h3>
+    <input type="hidden" id="ultraEditId">
+    <div class="form-row"><label>Race Name</label><input type="text" id="ultraName" placeholder="e.g. Western States 100"></div>
+    <div class="form-row"><label>Distance Type</label>
+      <select id="ultraDist">
+        <option>50K</option><option>60K</option><option>50 Miles</option><option>100K</option><option>100 Miles</option><option>Timed Event</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Year</label><input type="number" id="ultraYear" placeholder="2024"></div>
+    <div class="form-row"><label>Date</label><input type="text" id="ultraDate" placeholder="e.g. June 29, 2024"></div>
+    <div class="form-row"><label>Location</label><input type="text" id="ultraLocation" placeholder="e.g. Auburn, CA"></div>
+    <div class="form-row"><label>Result (time or miles)</label><input type="text" id="ultraResult" placeholder="e.g. 28:14:33"></div>
+    <div class="form-row"><label>Overall Place</label><input type="text" id="ultraOverall" placeholder="e.g. 42 / 369"></div>
+    <div class="form-row"><label>Division Place</label><input type="text" id="ultraDiv" placeholder="e.g. 8 / 52"></div>
+    <div class="form-row"><label>Results URL</label><input type="text" id="ultraUrl" placeholder="https://..."></div>
+    <div class="form-row"><label>Notes</label><input type="text" id="ultraNotes" placeholder="Optional notes"></div>
+    <div class="form-actions">
+      <button class="btn-delete" id="ultraDeleteBtn" onclick="deleteUltraRace()" style="display:none">Delete</button>
+      <button class="btn-cancel" onclick="closeModal('ultraModal')">Cancel</button>
+      <button class="btn-save" onclick="saveUltraRace()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MARATHON_DATA = [
+  { type:'marathon', year:2026, name:'Jersey City Marathon', dist:'26.2M', detail:'May 2026 · Jersey City, NJ', time:'4:18:51' },
+  { type:'marathon', year:2014, name:'İstanbul Maratonu', dist:'26.2M', detail:'November 2014 · Istanbul, Turkey', time:'3:56:01' },
+  { type:'marathon', year:2013, name:'ING New York City Marathon', dist:'26.2M', detail:'November 2013 · New York, NY', time:'3:54:23' },
+  { type:'marathon', year:2008, name:"San Diego Rock 'n' Roll Marathon", dist:'26.2M', detail:'May 2008 · San Diego, CA', time:'4:43:37' },
+];
+
+const SEED_VER = 'v5';
+
+const SEED_SUB = [
+  { id:'s23', year:2015, name:'BolderBOULDER 10K',                      dist:'10K',   date:'May 25th 2015', location:'Boulder, CO',       time:'46:27',   overall:'2127', div:'26', url:'https://www.athlinks.com/event/6172', notes:'Bib DA349 · M overall 1755', type:'sub' },
+  { id:'s24', year:2013, name:'Riker Danzig Newport 10,000',             dist:'10K',   date:'May 11th 2013', location:'Jersey City, NJ',   time:'',        overall:'', div:'', url:'', notes:'', type:'sub' },
+  { id:'s3',  year:2011, name:'Portugal Day 5M',                         dist:'Other', date:'Jun 19th 2011', location:'New York, NY',      time:'0:36:54', overall:'', div:'', url:'https://results.nyrr.org/', notes:'Bib 1393 · Pace 7:23/mi · 5 miles', type:'sub' },
+  { id:'s4',  year:2011, name:'NYRR 4-Mile',                             dist:'Other', date:'Apr 23rd 2011', location:'New York, NY',      time:'0:28:29', overall:'', div:'', url:'https://results.nyrr.org/', notes:'Bib 1367 · Pace 7:07/mi · 4 miles', type:'sub' },
+  { id:'s5',  year:2011, name:'New York CCC 4M',                         dist:'Other', date:'Mar 27th 2011', location:'New York, NY',      time:'0:29:17', overall:'', div:'', url:'https://results.nyrr.org/', notes:'Bib 1363 · Pace 7:19/mi · 4 miles', type:'sub' },
+  { id:'s6',  year:2011, name:"Coogan's Salsa, Blues & Shamrocks 5K",   dist:'5K',    date:'Mar 6th 2011',  location:'New York, NY',      time:'0:23:15', overall:'', div:'', url:'https://results.nyrr.org/', notes:'Bib 4389 · Pace 7:30/mi', type:'sub' },
+  { id:'s7',  year:2011, name:'NYRR Al Gordon Classic 4M',               dist:'Other', date:'Feb 26th 2011', location:'New York, NY',      time:'0:32:07', overall:'', div:'', url:'https://results.nyrr.org/', notes:'Bib 4262 · Pace 8:01/mi · 4 miles', type:'sub' },
+];
+
+const SEED_HM = [
+  { id:'h25', year:2025, name:'Harding Halloween Half Marathon',             dist:'Half Marathon', date:'Oct 18th 2025',  location:'Morristown, NJ',    time:'1:49:20', overall:'193',        div:'148 / M55-59',  url:'https://runsignup.com/Race/Results/157977', notes:'Bib 1479 · Pace 8:20/mi · Halfway 57:18', type:'hm' },
+  { id:'h21', year:2024, name:'New Jersey Half Marathon & 5K at Newport',   dist:'Half Marathon', date:'Sep 28th 2024',  location:'Jersey City, NJ',   time:'1:50:09', overall:'753 / 4065', div:'28 / 171',      url:'https://www.athlinks.com/event/5182/results/Event/1093195/Course/2526726/Results', notes:'Pace 8:25/mi · M 50-59', type:'hm' },
+  { id:'h20', year:2018, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 16th 2018',  location:'Jersey City, NJ',   time:'1:58:35', overall:'641 / 2355', div:'42 / 102',      url:'https://www.athlinks.com/event/5182/results/Event/756679/Course/1239239/Results', notes:'Pace 9:03/mi · M 50-54', type:'hm' },
+  { id:'h19', year:2017, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 17th 2017',  location:'Jersey City, NJ',   time:'1:44:26', overall:'341 / 2514', div:'22 / 99',       url:'https://www.athlinks.com/event/5182/results/Event/603790/Course/914401/Results', notes:'Pace 7:58/mi · M 50-54', type:'hm' },
+  { id:'h10', year:2016, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 18th 2016',  location:'Jersey City, NJ',   time:'2:06:10', overall:'1068 / 2549',div:'92 / 159',      url:'https://www.athlinks.com/event/5182/results/Event/530346/Course/788233/Results', notes:'Pace 9:38/mi · M 45-49', type:'hm' },
+  { id:'h11', year:2015, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 20th 2015',  location:'Jersey City, NJ',   time:'1:43:12', overall:'379 / 2087', div:'33 / 128',      url:'https://www.athlinks.com/event/5182/results/Event/479348/Course/713255/Results', notes:'Pace 7:53/mi · M 45-49', type:'hm' },
+  { id:'h18', year:2014, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 21st 2014',  location:'Jersey City, NJ',   time:'2:11:35', overall:'1615 / 2782',div:'116 / 174',     url:'https://www.athlinks.com/event/5182/results/Event/366659/Course/539965/Results', notes:'Pace 10:03/mi · M 45-49', type:'hm' },
+  { id:'h12', year:2013, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 22nd 2013',  location:'Jersey City, NJ',   time:'3:24:00', overall:'2692 / 2697',div:'142 / 142',     url:'https://www.athlinks.com/event/5182/results/Event/314557/Course/451972/Results', notes:'Pace 15:34/mi · M 45-49', type:'hm' },
+  { id:'h13', year:2012, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 23rd 2012',  location:'Jersey City, NJ',   time:'1:41:22', overall:'435 / 2634', div:'40 / 149',      url:'https://www.athlinks.com/event/5182/results/Event/199697/Course/276604/Results', notes:'Pace 7:44/mi · M 45-49', type:'hm' },
+  { id:'h1',  year:2012, name:'NYC Half Marathon',                           dist:'Half Marathon', date:'Mar 18th 2012',  location:'New York, NY',      time:'1:41:17', overall:'',           div:'',              url:'https://results.nyrr.org/', notes:'Bib 4340 · Pace 7:44/mi', type:'hm' },
+  { id:'h14', year:2011, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 25th 2011',  location:'Jersey City, NJ',   time:'1:49:13', overall:'491 / 2219', div:'71 / 199',      url:'https://www.athlinks.com/event/5182/results/Event/173429/Course/238511/Results', notes:'Pace 8:20/mi · M 40-44', type:'hm' },
+  { id:'h2',  year:2011, name:'Staten Island Half Marathon',                 dist:'Half Marathon', date:'Oct 9th 2011',   location:'Staten Island, NY', time:'1:41:08', overall:'',           div:'',              url:'https://results.nyrr.org/', notes:'Bib 1397 · Pace 7:43/mi', type:'hm' },
+  { id:'h8',  year:2011, name:'NYRR Manhattan Half-Marathon',                dist:'Half Marathon', date:'Jan 22nd 2011',  location:'Manhattan, NY',     time:'1:52:15', overall:'',           div:'',              url:'https://results.nyrr.org/', notes:'Bib 7352 · Pace 8:34/mi', type:'hm' },
+  { id:'h15', year:2010, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 2010',       location:'Jersey City, NJ',   time:'1:47:35', overall:'',           div:'',              url:'', notes:'Bib 1082', type:'hm' },
+  { id:'h17', year:2009, name:'Newport Liberty Half Marathon',               dist:'Half Marathon', date:'Sep 27th 2009',  location:'Jersey City, NJ',   time:'1:52:31', overall:'539 / 1569', div:'63 / 135',      url:'https://www.athlinks.com/event/5182/results/Event/91801/Course/129110/Results', notes:'Pace 8:35/mi · M 40-44', type:'hm' },
+  { id:'h16', year:2008, name:'Newport-Liberty Waterfront Run Half Marathon',dist:'Half Marathon', date:'Sep 28th 2008',  location:'Jersey City, NJ',   time:'1:53:23', overall:'503 / 1331', div:'66 / 128',      url:'https://www.athlinks.com/event/5182/results/Event/64964/Course/97102/Results', notes:'Pace 8:39/mi · M 40-44', type:'hm' },
+  { id:'h22', year:2008, name:'Long Branch Half Marathon',                   dist:'Half Marathon', date:'May 4th 2008',   location:'Long Branch, NJ',   time:'',        overall:'',           div:'',              url:'https://www.athlinks.com/event/5179', notes:'NJ Marathon weekend', type:'hm' },
+];
+
+const SEED_ULTRA = [
+  { id:'u1',  year:2026, name:'3 Days at the Fair',                           dist:'Timed Event', date:'May 16th 2026',  location:'Augusta, NJ',             result:'50 mi',    overall:'9 / 27',    div:'8 / 16',    url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/49057/results#3232807', notes:'12-hour event', type:'ultra' },
+  { id:'u2',  year:2026, name:'Spartan Trail — Bear Mountain Trail Challenge', dist:'50K',         date:'May 2nd 2026',   location:'Tomkins Cove, NY',        result:'9:32:57',  overall:'87 / 101',  div:'74 / 85',   url:'https://ultrarunning.com/calendar/event/spartan-trail-bear-mountain-trail-challenge/race/52181/results#3221807', notes:'', type:'ultra' },
+  { id:'u3',  year:2019, name:'Rock the Ridge',                                dist:'50 Miles',    date:'May 4th 2019',   location:'New Paltz, NY',           result:'10:33:28', overall:'80 / 354',  div:'53 / 202',  url:'https://ultrarunning.com/calendar/event/rock-the-ridge/race/22958/results#2095089', notes:'', type:'ultra' },
+  { id:'u4',  year:2018, name:'The North Face Endurance Challenge New York',   dist:'50 Miles',    date:'May 5th 2018',   location:'New York, NY',            result:'13:54:07', overall:'255 / 268', div:'222 / 232', url:'https://ultrarunning.com/calendar/event/the-north-face-endurance-challenge-new-york/race/19052/results#1932394', notes:'', type:'ultra' },
+  { id:'u23', year:2017, name:'Lycian Way Ultra Marathon (LYUM)',               dist:'Timed Event', date:'Sep 2017',       location:'Fethiye-Antalya, Turkey', result:'25:29:12', overall:'',          div:'',          url:'https://likyayoluultramaratonu.com/EN/?p=Results', notes:'6-day stage race · Bib #6 · Day 1: 6:30:33 · Day 2: 9:04:07 · Day 3: 9:54:32 · Day 4: DNF', type:'ultra' },
+  { id:'u5',  year:2016, name:'3 Days at the Fair',                            dist:'Timed Event', date:'May 12th 2016',  location:'Augusta, NJ',             result:'36 mi',    overall:'49 / 52',   div:'31 / 33',   url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/13267/results#1611620', notes:'24-hour event', type:'ultra' },
+  { id:'u6',  year:2015, name:'Staten Island Trail Festival',                   dist:'50K',         date:'Dec 5th 2015',   location:'Staten Island, NY',       result:'5:47:17',  overall:'33 / 69',   div:'27 / 44',   url:'https://ultrarunning.com/calendar/event/staten-island-trail-festival/race/20350/results#1855494', notes:'', type:'ultra' },
+  { id:'u7',  year:2015, name:'NYRR NYC (Knickerbocker) 60K',                  dist:'60K',         date:'Nov 14th 2015',  location:'Manhattan, NY',           result:'5:53:06',  overall:'81 / 351',  div:'62 / 248',  url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/14275/results#1520679', notes:'', type:'ultra' },
+  { id:'u8',  year:2015, name:'3 Days at the Fair',                            dist:'Timed Event', date:'May 16th 2015',  location:'Augusta, NJ',             result:'35 mi',    overall:'39 / 42',   div:'23 / 24',   url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/12462/results#1451195', notes:'24-hour event', type:'ultra' },
+  { id:'u9',  year:2013, name:'3 Days at the Fair',                            dist:'Timed Event', date:'May 16th 2013',  location:'Augusta, NJ',             result:'100 mi',   overall:'10 / 39',   div:'10 / 25',   url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/8806/results#1251858', notes:'24-hour event', type:'ultra' },
+  { id:'u10', year:2013, name:'The North Face Endurance Challenge New York',   dist:'50 Miles',    date:'May 4th 2013',   location:'New York, NY',            result:'14:03:48', overall:'266 / 275', div:'233 / 240', url:'https://ultrarunning.com/calendar/event/the-north-face-endurance-challenge-new-york/race/9278/results#1274266', notes:'', type:'ultra' },
+  { id:'u11', year:2013, name:'New Jersey Ultra Trail Festival',                dist:'50 Miles',    date:'Mar 23rd 2013',  location:'Augusta, NJ',             result:'12:22:39', overall:'41 / 56',   div:'28 / 37',   url:'https://ultrarunning.com/calendar/event/new-jersey-ultra-trail-festival/race/9151/results#1268511', notes:'', type:'ultra' },
+  { id:'u12', year:2013, name:'Febapple Frozen Fifty',                         dist:'50K',         date:'Feb 23rd 2013',  location:'Maplewood, NJ',           result:'7:14:09',  overall:'52 / 73',   div:'44 / 56',   url:'https://ultrarunning.com/calendar/event/febapple-frozen-fifty/race/8918/results#1257166', notes:'', type:'ultra' },
+  { id:'u13', year:2012, name:'NYRR NYC (Knickerbocker) 60K',                  dist:'60K',         date:'Nov 17th 2012',  location:'Manhattan, NY',           result:'6:06:46',  overall:'106 / 297', div:'89 / 207',  url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/8490/results#1235795', notes:'', type:'ultra' },
+  { id:'u14', year:2012, name:'3 Days at the Fair',                            dist:'Timed Event', date:'May 10th 2012',  location:'Augusta, NJ',             result:'83.21 mi', overall:'11 / 26',   div:'9 / 14',    url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/7797/results#1190169', notes:'24-hour event', type:'ultra' },
+  { id:'u15', year:2012, name:'New Jersey Ultra Trail Festival',                dist:'100K',        date:'Mar 24th 2012',  location:'Augusta, NJ',             result:'16:53:19', overall:'25 / 29',   div:'21 / 23',   url:'https://ultrarunning.com/calendar/event/new-jersey-ultra-trail-festival/race/7663/results#1184897', notes:'', type:'ultra' },
+  { id:'u16', year:2012, name:'Febapple Frozen Fifty',                         dist:'50 Miles',    date:'Feb 25th 2012',  location:'Maplewood, NJ',           result:'11:11:27', overall:'21 / 25',   div:'20 / 22',   url:'https://ultrarunning.com/calendar/event/febapple-frozen-fifty/race/7092/results#1155192', notes:'', type:'ultra' },
+  { id:'u17', year:2011, name:'NYRR NYC (Knickerbocker) 60K',                  dist:'60K',         date:'Nov 19th 2011',  location:'Manhattan, NY',           result:'7:06:10',  overall:'189 / 270', div:'141 / 188', url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/5535/results#1081237', notes:'', type:'ultra' },
+  { id:'u18', year:2011, name:'3 Days at the Fair',                            dist:'Timed Event', date:'May 12th 2011',  location:'Augusta, NJ',             result:'80.63 mi', overall:'8 / 22',    div:'5 / 15',    url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/5473/results#1077713', notes:'24-hour event', type:'ultra' },
+  { id:'u19', year:2011, name:'New Jersey Ultra Trail Festival',                dist:'50 Miles',    date:'Mar 19th 2011',  location:'Augusta, NJ',             result:'10:39:29', overall:'34 / 51',   div:'25 / 35',   url:'https://ultrarunning.com/calendar/event/new-jersey-ultra-trail-festival/race/4743/results#1039774', notes:'', type:'ultra' },
+  { id:'u20', year:2010, name:'JFK 50 Mile',                                   dist:'50 Miles',    date:'Nov 20th 2010',  location:'Boonsboro, MD',           result:'11:20:07', overall:'763 / 1039',div:'613 / 807', url:'https://ultrarunning.com/calendar/event/jfk/race/3150/results#951259', notes:'Oldest ultra in US', type:'ultra' },
+  { id:'u21', year:2010, name:'Mountain Madness',                               dist:'50K',         date:'Oct 16th 2010',  location:'Ringwood, NJ',            result:'8:16:04',  overall:'73 / 85',   div:'59 / 68',   url:'https://ultrarunning.com/calendar/event/mountain-madness/race/4614/results#1032819', notes:'', type:'ultra' },
+  { id:'u22', year:2008, name:'NYRR NYC (Knickerbocker) 60K',                  dist:'60K',         date:'Nov 15th 2008',  location:'Manhattan, NY',           result:'6:41:09',  overall:'46 / 80',   div:'34 / 63',   url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/4155/results#1008414', notes:'First ultra', type:'ultra' },
+];
+
+function load(key, seed) {
+  try {
+    const stored = localStorage.getItem(key + '_' + SEED_VER);
+    if (stored) return JSON.parse(stored);
+    localStorage.setItem(key + '_' + SEED_VER, JSON.stringify(seed));
+    return JSON.parse(JSON.stringify(seed));
+  } catch { return JSON.parse(JSON.stringify(seed)); }
+}
+function save(key, data) {
+  try { localStorage.setItem(key + '_' + SEED_VER, JSON.stringify(data)); } catch {}
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+let subRaces = load('running_sub', SEED_SUB);
+let hmRaces = load('running_hm', SEED_HM);
+let ultraRaces = load('running_ultra', SEED_ULTRA);
+let subFilter = 'all';
+let ultraFilter = 'all';
+
+function updateStats() {
+  const total = 4 + ultraRaces.length + subRaces.length + hmRaces.length;
+  document.getElementById('statRaces').textContent = total;
+  document.getElementById('statMarathons').textContent = 4;
+  document.getElementById('statUltras').textContent = ultraRaces.length || '—';
+  document.getElementById('statSubs').textContent = (subRaces.length + hmRaces.length) || '—';
+}
+
+function buildAllGrid(filter) {
+  const grid = document.getElementById('allGrid');
+  let items = [
+    ...MARATHON_DATA,
+    ...hmRaces.map(r => ({...r, type:'hm', dist:'HM'})),
+    ...subRaces.map(r => ({...r, type:'sub'})),
+    ...ultraRaces.map(r => ({...r, type:'ultra', time:r.result})),
+  ].sort((a,b) => (b.year||0)-(a.year||0));
+
+  if (filter && filter !== 'all') items = items.filter(i => i.type === filter);
+
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="big">🏃</div>No races yet</div>';
+    return;
+  }
+  grid.innerHTML = items.map(r => `
+    <div class="all-card">
+      <div class="ac-type ${r.type}">${r.type === 'hm' ? 'Half Marathon' : r.type === 'sub' ? r.dist || 'Sub-HM' : r.type}</div>
+      <div class="ac-name">${r.name}</div>
+      <div class="ac-detail">${r.detail || (r.date ? r.date + (r.location ? ' · ' + r.location : '') : (r.location || ''))}</div>
+      ${r.time ? `<div class="ac-time">${r.time}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function buildSubTable(filter) {
+  const wrap = document.getElementById('subTableWrap');
+  let races = [...subRaces].sort((a,b) => (b.year||0)-(a.year||0));
+  if (filter && filter !== 'all') races = races.filter(r => r.dist === filter);
+
+  if (!races.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="big">🏅</div>No sub-HM races yet — add one above</div>';
+    return;
+  }
+  wrap.innerHTML = `<table class="log-table">
+    <thead><tr><th>Year</th><th>Dist</th><th>Race</th><th>Time</th><th>Overall</th><th>Div</th><th></th></tr></thead>
+    <tbody>${races.map(r => `
+      <tr>
+        <td class="td-year">${r.year||''}</td>
+        <td><span class="td-dist">${r.dist||''}</span></td>
+        <td>${r.name}${r.location ? `<br><span style="font-size:0.75rem;color:var(--muted)">${r.location}</span>` : ''}</td>
+        <td class="td-time">${r.time||'—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${r.overall||'—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${r.div||'—'}</td>
+        <td><button class="edit-btn" onclick="editSubRace('${r.id}')">✎</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function buildHMTable() {
+  const wrap = document.getElementById('hmTableWrap');
+  let races = [...hmRaces].sort((a,b) => (b.year||0)-(a.year||0));
+  if (!races.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="big">🏅</div>No half marathons yet — add one above</div>';
+    return;
+  }
+  wrap.innerHTML = `<table class="log-table">
+    <thead><tr><th>Year</th><th>Race</th><th>Time</th><th>Overall</th><th>Div</th><th></th></tr></thead>
+    <tbody>${races.map(r => `
+      <tr>
+        <td class="td-year">${r.year||''}</td>
+        <td>${r.name}${r.location ? `<br><span style="font-size:0.75rem;color:var(--muted)">${r.location}</span>` : ''}</td>
+        <td class="td-time">${r.time||'—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${r.overall||'—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${r.div||'—'}</td>
+        <td><button class="edit-btn" onclick="editHMRace('${r.id}')">✎</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function buildUltraTable(filter) {
+  const wrap = document.getElementById('ultraTableWrap');
+  let races = [...ultraRaces].sort((a,b) => (b.year||0)-(a.year||0));
+  if (filter && filter !== 'all') races = races.filter(r => r.dist === filter);
+  if (!races.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="big">🦅</div>No ultras yet — add one above</div>';
+    return;
+  }
+  wrap.innerHTML = `<table class="log-table">
+    <thead><tr><th>Year</th><th>Dist</th><th>Race</th><th>Result</th><th>Overall</th><th>Div</th><th></th></tr></thead>
+    <tbody>${races.map(r => `
+      <tr>
+        <td class="td-year">${r.year||''}</td>
+        <td><span class="td-dist">${r.dist||''}</span></td>
+        <td>${r.url ? `<a class="td-link" href="${r.url}" target="_blank">${r.name}</a>` : r.name}${r.location ? `<br><span style="font-size:0.75rem;color:var(--muted)">${r.location}</span>` : ''}</td>
+        <td class="td-time">${r.result||'—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${r.overall||'—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted)">${r.div||'—'}</td>
+        <td><button class="edit-btn" onclick="editUltraRace('${r.id}')">✎</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderAll() {
+  buildAllGrid('all');
+  buildSubTable(subFilter);
+  buildHMTable();
+  buildUltraTable(ultraFilter);
+  updateStats();
+}
+
+// Tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// All tab filters
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    buildAllGrid(btn.dataset.filter);
+  });
+});
+
+// Sub filters
+document.querySelectorAll('[data-subfilter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-subfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    subFilter = btn.dataset.subfilter;
+    buildSubTable(subFilter);
+  });
+});
+
+// Ultra filters
+document.querySelectorAll('[data-ultrafilter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-ultrafilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ultraFilter = btn.dataset.ultrafilter;
+    buildUltraTable(ultraFilter);
+  });
+});
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// SUB MODAL
+function openSubModal() {
+  document.getElementById('subModalTitle').textContent = 'Add Sub-HM Race';
+  document.getElementById('subEditId').value = '';
+  document.getElementById('subDeleteBtn').style.display = 'none';
+  ['subName','subYear','subDate','subLocation','subTime','subOverall','subDiv','subUrl','subNotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('subDist').value = '5K';
+  openModal('subModal');
+}
+function editSubRace(id) {
+  const r = subRaces.find(x => x.id === id); if (!r) return;
+  document.getElementById('subModalTitle').textContent = 'Edit Sub-HM Race';
+  document.getElementById('subEditId').value = id;
+  document.getElementById('subDeleteBtn').style.display = 'inline-block';
+  document.getElementById('subName').value = r.name||'';
+  document.getElementById('subDist').value = r.dist||'5K';
+  document.getElementById('subYear').value = r.year||'';
+  document.getElementById('subDate').value = r.date||'';
+  document.getElementById('subLocation').value = r.location||'';
+  document.getElementById('subTime').value = r.time||'';
+  document.getElementById('subOverall').value = r.overall||'';
+  document.getElementById('subDiv').value = r.div||'';
+  document.getElementById('subUrl').value = r.url||'';
+  document.getElementById('subNotes').value = r.notes||'';
+  openModal('subModal');
+}
+function saveSubRace() {
+  const id = document.getElementById('subEditId').value;
+  const race = {
+    id: id || uid(),
+    name: document.getElementById('subName').value,
+    dist: document.getElementById('subDist').value,
+    year: parseInt(document.getElementById('subYear').value) || null,
+    date: document.getElementById('subDate').value,
+    location: document.getElementById('subLocation').value,
+    time: document.getElementById('subTime').value,
+    overall: document.getElementById('subOverall').value,
+    div: document.getElementById('subDiv').value,
+    url: document.getElementById('subUrl').value,
+    notes: document.getElementById('subNotes').value,
+    type: 'sub',
+  };
+  if (!race.name) { alert('Race name is required'); return; }
+  if (id) { subRaces = subRaces.map(r => r.id === id ? race : r); }
+  else { subRaces.push(race); }
+  save('running_sub', subRaces);
+  closeModal('subModal');
+  buildSubTable(subFilter);
+  buildAllGrid('all');
+  updateStats();
+}
+function deleteSubRace() {
+  const id = document.getElementById('subEditId').value;
+  if (!id || !confirm('Delete this race?')) return;
+  subRaces = subRaces.filter(r => r.id !== id);
+  save('running_sub', subRaces);
+  closeModal('subModal');
+  buildSubTable(subFilter);
+  buildAllGrid('all');
+  updateStats();
+}
+
+// HM MODAL
+function openHMModal() {
+  document.getElementById('hmModalTitle').textContent = 'Add Half Marathon';
+  document.getElementById('hmEditId').value = '';
+  document.getElementById('hmDeleteBtn').style.display = 'none';
+  ['hmName','hmYear','hmDate','hmLocation','hmTime','hmOverall','hmDiv','hmUrl','hmNotes'].forEach(id => document.getElementById(id).value = '');
+  openModal('hmModal');
+}
+function editHMRace(id) {
+  const r = hmRaces.find(x => x.id === id); if (!r) return;
+  document.getElementById('hmModalTitle').textContent = 'Edit Half Marathon';
+  document.getElementById('hmEditId').value = id;
+  document.getElementById('hmDeleteBtn').style.display = 'inline-block';
+  document.getElementById('hmName').value = r.name||'';
+  document.getElementById('hmYear').value = r.year||'';
+  document.getElementById('hmDate').value = r.date||'';
+  document.getElementById('hmLocation').value = r.location||'';
+  document.getElementById('hmTime').value = r.time||'';
+  document.getElementById('hmOverall').value = r.overall||'';
+  document.getElementById('hmDiv').value = r.div||'';
+  document.getElementById('hmUrl').value = r.url||'';
+  document.getElementById('hmNotes').value = r.notes||'';
+  openModal('hmModal');
+}
+function saveHMRace() {
+  const id = document.getElementById('hmEditId').value;
+  const race = {
+    id: id || uid(),
+    name: document.getElementById('hmName').value,
+    dist: 'Half Marathon',
+    year: parseInt(document.getElementById('hmYear').value) || null,
+    date: document.getElementById('hmDate').value,
+    location: document.getElementById('hmLocation').value,
+    time: document.getElementById('hmTime').value,
+    overall: document.getElementById('hmOverall').value,
+    div: document.getElementById('hmDiv').value,
+    url: document.getElementById('hmUrl').value,
+    notes: document.getElementById('hmNotes').value,
+    type: 'hm',
+  };
+  if (!race.name) { alert('Race name is required'); return; }
+  if (id) { hmRaces = hmRaces.map(r => r.id === id ? race : r); }
+  else { hmRaces.push(race); }
+  save('running_hm', hmRaces);
+  closeModal('hmModal');
+  buildHMTable();
+  buildAllGrid('all');
+  updateStats();
+}
+function deleteHMRace() {
+  const id = document.getElementById('hmEditId').value;
+  if (!id || !confirm('Delete this race?')) return;
+  hmRaces = hmRaces.filter(r => r.id !== id);
+  save('running_hm', hmRaces);
+  closeModal('hmModal');
+  buildHMTable();
+  buildAllGrid('all');
+  updateStats();
+}
+
+// ULTRA MODAL
+function openUltraModal() {
+  document.getElementById('ultraModalTitle').textContent = 'Add Ultra Race';
+  document.getElementById('ultraEditId').value = '';
+  document.getElementById('ultraDeleteBtn').style.display = 'none';
+  ['ultraName','ultraYear','ultraDate','ultraLocation','ultraResult','ultraOverall','ultraDiv','ultraUrl','ultraNotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ultraDist').value = '50K';
+  openModal('ultraModal');
+}
+function editUltraRace(id) {
+  const r = ultraRaces.find(x => x.id === id); if (!r) return;
+  document.getElementById('ultraModalTitle').textContent = 'Edit Ultra Race';
+  document.getElementById('ultraEditId').value = id;
+  document.getElementById('ultraDeleteBtn').style.display = 'inline-block';
+  document.getElementById('ultraName').value = r.name||'';
+  document.getElementById('ultraDist').value = r.dist||'50K';
+  document.getElementById('ultraYear').value = r.year||'';
+  document.getElementById('ultraDate').value = r.date||'';
+  document.getElementById('ultraLocation').value = r.location||'';
+  document.getElementById('ultraResult').value = r.result||'';
+  document.getElementById('ultraOverall').value = r.overall||'';
+  document.getElementById('ultraDiv').value = r.div||'';
+  document.getElementById('ultraUrl').value = r.url||'';
+  document.getElementById('ultraNotes').value = r.notes||'';
+  openModal('ultraModal');
+}
+function saveUltraRace() {
+  const id = document.getElementById('ultraEditId').value;
+  const race = {
+    id: id || uid(),
+    name: document.getElementById('ultraName').value,
+    dist: document.getElementById('ultraDist').value,
+    year: parseInt(document.getElementById('ultraYear').value) || null,
+    date: document.getElementById('ultraDate').value,
+    location: document.getElementById('ultraLocation').value,
+    result: document.getElementById('ultraResult').value,
+    overall: document.getElementById('ultraOverall').value,
+    div: document.getElementById('ultraDiv').value,
+    url: document.getElementById('ultraUrl').value,
+    notes: document.getElementById('ultraNotes').value,
+    type: 'ultra',
+  };
+  if (!race.name) { alert('Race name is required'); return; }
+  if (id) { ultraRaces = ultraRaces.map(r => r.id === id ? race : r); }
+  else { ultraRaces.push(race); }
+  save('running_ultra', ultraRaces);
+  closeModal('ultraModal');
+  buildUltraTable(ultraFilter);
+  buildAllGrid('all');
+  updateStats();
+}
+function deleteUltraRace() {
+  const id = document.getElementById('ultraEditId').value;
+  if (!id || !confirm('Delete this race?')) return;
+  ultraRaces = ultraRaces.filter(r => r.id !== id);
+  save('running_ultra', ultraRaces);
+  closeModal('ultraModal');
+  buildUltraTable(ultraFilter);
+  buildAllGrid('all');
+  updateStats();
+}
+
+renderAll();
+</script>
+</body>
+</html>
