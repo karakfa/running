@@ -247,6 +247,7 @@
   .badge-green  { background: var(--green-dim); color: var(--green); }
   .badge-pink   { background: var(--pink-dim);  color: var(--pink); }
   .badge-accent { background: #0e1e28;          color: var(--accent); }
+  .badge-orange { background: #2a1500;          color: #e87830; }
 
   .td-time { width: 150px; }
 
@@ -553,6 +554,7 @@ const SEED = [
   { id:24, year:'2013', name:'Riker Danzig Newport 10,000',  dist:'10k',  date:'May 11th 2013', location:'Jersey City, NJ', time:null, overall:'', division:'', url:'', notes:'', badges:[{label:'Local',cls:'badge-teal'}] },
   { id:12, year:'2013', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 22nd 2013',  location:'Jersey City, NJ', time:'3:24:00', overall:'2692 / 2697', division:'142 / 142', url:'https://www.athlinks.com/event/5182/results/Event/314557/Course/451972/Results', notes:'Pace 15:34/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
   { id:11, year:'2015', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 20th 2015',  location:'Jersey City, NJ', time:'1:43:12', overall:'379 / 2087', division:'33 / 128', url:'https://www.athlinks.com/event/5182/results/Event/479348/Course/713255/Results', notes:'Pace 7:53/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
+  { id:25, year:'2025', name:'Harding Halloween Half Marathon', dist:'half', date:'Oct 18th 2025', location:'Morristown, NJ', time:'1:49:20', overall:'193', division:'148 / M55-59', url:'https://runsignup.com/Race/Results/157977', notes:'Bib 1479 · Chip 1:49:20 · Pace 8:20/mi · Halfway 57:18', badges:[{label:'Halloween',cls:'badge-orange'}] },
   { id:21, year:'2024', name:'New Jersey Half Marathon & 5K at Newport', dist:'half', date:'Sep 28th 2024', location:'Jersey City, NJ', time:'1:50:09', overall:'753 / 4065', division:'28 / 171', url:'https://www.athlinks.com/event/5182/results/Event/1093195/Course/2526726/Results', notes:'Pace 8:25/mi · M 50-59', badges:[{label:'Local',cls:'badge-teal'}] },
   { id:10, year:'2016', name:'Newport Liberty Half Marathon', dist:'half', date:'Sep 18th 2016',  location:'Jersey City, NJ', time:'2:06:10', overall:'1068 / 2549', division:'92 / 159', url:'https://www.athlinks.com/event/5182/results/Event/530346/Course/788233/Results', notes:'Pace 9:38/mi · M 45-49', badges:[{label:'Local',cls:'badge-teal'}] },
   { id:1,  year:'2012', name:'NYC Half Marathon',           dist:'half',  date:'Mar 18th 2012', location:'New York, NY',      time:'1:41:17', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 4340 · Pace 7:44/mi', badges:[{label:'NYRR',cls:'badge-accent'}] },
@@ -565,14 +567,20 @@ const SEED = [
   { id:8,  year:'2011', name:'NYRR Manhattan Half-Marathon', dist:'half', date:'Jan 22nd 2011', location:'Manhattan, NY',     time:'1:52:15', overall:'', division:'', url:'https://results.nyrr.org/', notes:'Bib 7352 · Pace 8:34/mi', badges:[{label:'NYRR',cls:'badge-accent'}] },
 ];
 
+let _races = null;
 function loadRaces() {
-  const raw = localStorage.getItem('subs_v24');
-  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
-  localStorage.setItem('subs_v24', JSON.stringify(SEED));
-  return JSON.parse(JSON.stringify(SEED));
+  if (_races) return _races;
+  try {
+    const raw = localStorage.getItem('subs_v26');
+    if (raw) { const p = JSON.parse(raw); if (p && p.length) { _races = p; return _races; } }
+  } catch(e) {}
+  _races = JSON.parse(JSON.stringify(SEED));
+  return _races;
 }
-
-function saveRaces(arr) { localStorage.setItem('subs_v24', JSON.stringify(arr)); }
+function saveRaces(arr) {
+  _races = arr;
+  try { localStorage.setItem('subs_v26', JSON.stringify(arr)); } catch(e) {}
+}
 
 function computeStats(races) {
   const years = new Set(races.map(r => r.year)).size;
