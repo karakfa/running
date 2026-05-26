@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra Log — Fatih Karakurt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #131615;
+    --border: #1e2420;
+    --border-bright: #2e3830;
+    --text: #c8d4c0;
+    --text-dim: #5a6856;
+    --text-muted: #3a4238;
+    --green: #4caf6e;
+    --green-dim: #1e3a28;
+    --amber: #e8a840;
+    --amber-dim: #3a2a10;
+    --red: #e05a4a;
+    --red-dim: #3a1a14;
+    --blue: #5a9ed8;
+    --blue-dim: #1a2a3a;
+    --orange: #e87830;
+    --orange-dim: #3a1e0a;
+    --purple: #9a6ed8;
+    --purple-dim: #1e1a3a;
+    --teal: #3ab8a8;
+    --teal-dim: #0e2a26;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: #fff;
+  }
+
+  .header-left h1 span { color: var(--orange); }
+
+  .header-left p {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 32px;
+    padding-bottom: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .stat { text-align: right; }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    color: var(--orange);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* ── Distance tabs ── */
+  .distance-nav {
+    padding: 0 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .distance-nav::-webkit-scrollbar { display: none; }
+
+  .distance-tab {
+    padding: 16px 22px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    background: none;
+    border-top: none; border-left: none; border-right: none;
+    outline: none;
+  }
+  .distance-tab:hover { color: var(--text); }
+  .distance-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* ── Main ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+
+  /* ── Table ── */
+  .race-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 48px;
+  }
+
+  .race-table th {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 16px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .race-table th:last-child { text-align: right; }
+
+  .race-row {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .race-row:hover { background: #131a16; }
+
+  .race-row td {
+    padding: 16px 16px;
+    vertical-align: middle;
+  }
+  .race-row td:last-child { text-align: right; }
+
+  .td-year {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    width: 72px;
+  }
+
+  .td-dist { width: 72px; }
+
+  .dist-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .dist-50k   { background: var(--green-dim);  color: var(--green); }
+  .dist-60k   { background: var(--teal-dim);   color: var(--teal); }
+  .dist-50m   { background: var(--blue-dim);   color: var(--blue); }
+  .dist-100k  { background: var(--amber-dim);  color: var(--amber); }
+  .dist-100m  { background: var(--red-dim);    color: var(--red); }
+  .dist-timed { background: var(--purple-dim); color: var(--purple); }
+
+  .race-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #e8ece4;
+    margin-bottom: 3px;
+  }
+  .race-name a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .race-name a:hover { color: var(--orange); }
+
+  .race-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  .badge-orange  { background: var(--orange-dim); color: var(--orange); }
+  .badge-amber   { background: var(--amber-dim);  color: var(--amber); }
+  .badge-red     { background: var(--red-dim);    color: var(--red); }
+  .badge-blue    { background: var(--blue-dim);   color: var(--blue); }
+  .badge-green   { background: var(--green-dim);  color: var(--green); }
+  .badge-purple  { background: var(--purple-dim); color: var(--purple); }
+  .badge-teal    { background: var(--teal-dim);   color: var(--teal); }
+
+  .td-time { width: 150px; }
+
+  .time-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: var(--orange);
+  }
+  .time-timed {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: var(--purple);
+  }
+  .time-place {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  /* ── Add row ── */
+  .add-row td { padding: 12px 16px; }
+
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border-bright);
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .add-btn:hover { color: var(--orange); border-color: var(--orange); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.78);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #141a16;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 500px;
+    padding: 32px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .modal-field { display: flex; flex-direction: column; gap: 6px; }
+  .modal-field.full { grid-column: 1 / -1; }
+
+  .modal-field label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .modal-field input,
+  .modal-field select,
+  .modal-field textarea {
+    background: var(--bg);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+    resize: none;
+  }
+  .modal-field input:focus,
+  .modal-field select:focus,
+  .modal-field textarea:focus { border-color: var(--orange); }
+  .modal-field select option { background: #0d0f0e; }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 22px;
+    align-items: center;
+  }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border-bright);
+    color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 9px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: var(--text); }
+
+  .btn-save {
+    background: var(--orange);
+    border: 1px solid var(--orange);
+    color: #0d0f0e;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 24px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+
+  .btn-delete {
+    background: none;
+    border: none;
+    color: var(--red);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: auto;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+    padding: 0;
+  }
+  .btn-delete:hover { opacity: 1; }
+
+  /* ── Responsive ── */
+  @media (max-width: 680px) {
+    header, main { padding-left: 16px; padding-right: 16px; }
+    .distance-nav { padding: 0 16px; }
+    .header-stats { gap: 18px; }
+    .stat-value { font-size: 28px; }
+    .td-year { font-size: 16px; width: 52px; }
+    .td-dist { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>ULTRA<span>LOG</span></h1>
+    <p>Fatih Karakurt · Beyond the Marathon</p>
+  </div>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-value" id="stat-years">—</div>
+      <div class="stat-label">Years Active</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-races">—</div>
+      <div class="stat-label">Races</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-miles">—</div>
+      <div class="stat-label">Miles Raced</div>
+    </div>
+  </div>
+</header>
+
+<nav class="distance-nav">
+  <button class="distance-tab active" data-filter="all">All</button>
+  <button class="distance-tab" data-filter="50k">50K</button>
+  <button class="distance-tab" data-filter="60k">60K</button>
+  <button class="distance-tab" data-filter="50m">50 Miles</button>
+  <button class="distance-tab" data-filter="100k">100K</button>
+  <button class="distance-tab" data-filter="timed">Timed</button>
+</nav>
+
+<main>
+  <div class="section-header">
+    <div class="section-title">Race History</div>
+  </div>
+  <table class="race-table" id="raceTable">
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Dist</th>
+        <th>Race</th>
+        <th style="text-align:right">Result</th>
+      </tr>
+    </thead>
+    <tbody id="raceBody"></tbody>
+  </table>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Edit Race</h2>
+    <div class="modal-grid">
+      <div class="modal-field full">
+        <label>Race Name</label>
+        <input type="text" id="inputName">
+      </div>
+      <div class="modal-field">
+        <label>Year</label>
+        <input type="text" id="inputYear">
+      </div>
+      <div class="modal-field">
+        <label>Distance Type</label>
+        <select id="inputDist">
+          <option value="50k">50K</option>
+          <option value="60k">60K</option>
+          <option value="50m">50 Miles</option>
+          <option value="100k">100K</option>
+          <option value="100m">100 Miles</option>
+          <option value="timed">Timed Event</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Date</label>
+        <input type="text" id="inputDate" placeholder="May 4th 2019">
+      </div>
+      <div class="modal-field">
+        <label>Location</label>
+        <input type="text" id="inputLocation" placeholder="City, ST">
+      </div>
+      <div class="modal-field">
+        <label>Result (time or miles)</label>
+        <input type="text" id="inputTime" placeholder="10:33:28 or 80.63 mi">
+      </div>
+      <div class="modal-field">
+        <label>Overall Place</label>
+        <input type="text" id="inputOverall" placeholder="80 / 354">
+      </div>
+      <div class="modal-field">
+        <label>Division Place</label>
+        <input type="text" id="inputDivision" placeholder="53 / 202">
+      </div>
+      <div class="modal-field full">
+        <label>Results URL</label>
+        <input type="text" id="inputUrl" placeholder="https://ultrarunning.com/...">
+      </div>
+      <div class="modal-field full">
+        <label>Notes</label>
+        <textarea id="inputNotes" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-delete" id="btnDelete" onclick="deleteRace()">Delete</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveRace()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Race data ──────────────────────────────────────────────────────────────
+const SEED_RACES = [
+  // 2026
+  { id:1,  year:'2026', name:'3 Days at the Fair',                          dist:'timed', distMi:50,    date:'May 16th 2026',  location:'Augusta, NJ',      time:'50 mi',     overall:'9 / 27',   division:'8 / 16',   url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/49057/results#3232807',                                              notes:'12-hour event', badges:[{label:'12 Hours',cls:'badge-purple'}] },
+  { id:2,  year:'2026', name:'Spartan Trail — Bear Mountain Trail Challenge',dist:'50k',  distMi:31.1,  date:'May 2nd 2026',   location:'Tomkins Cove, NY', time:'9:32:57',   overall:'87 / 101', division:'74 / 85',  url:'https://ultrarunning.com/calendar/event/spartan-trail-bear-mountain-trail-challenge/race/52181/results#3221807',               notes:'',  badges:[] },
+  // 2019
+  { id:3,  year:'2019', name:'Rock the Ridge',                               dist:'50m',  distMi:50,    date:'May 4th 2019',   location:'New Paltz, NY',    time:'10:33:28',  overall:'80 / 354', division:'53 / 202', url:'https://ultrarunning.com/calendar/event/rock-the-ridge/race/22958/results#2095089',                                              notes:'', badges:[] },
+  // 2018
+  { id:4,  year:'2018', name:'The North Face Endurance Challenge New York',  dist:'50m',  distMi:50,    date:'May 5th 2018',   location:'New York, NY',     time:'13:54:07',  overall:'255 / 268',division:'222 / 232',url:'https://ultrarunning.com/calendar/event/the-north-face-endurance-challenge-new-york/race/19052/results#1932394',               notes:'', badges:[] },
+  // 2016
+  { id:5,  year:'2016', name:'3 Days at the Fair',                           dist:'timed',distMi:36,    date:'May 12th 2016',  location:'Augusta, NJ',      time:'36 mi',     overall:'49 / 52',  division:'31 / 33',  url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/13267/results#1611620',                                              notes:'24-hour event', badges:[{label:'24 Hours',cls:'badge-purple'}] },
+  // 2015
+  { id:6,  year:'2015', name:'Staten Island Trail Festival',                 dist:'50k',  distMi:31.1,  date:'Dec 5th 2015',   location:'Staten Island, NY',time:'5:47:17',   overall:'33 / 69',  division:'27 / 44',  url:'https://ultrarunning.com/calendar/event/staten-island-trail-festival/race/20350/results#1855494',                                 notes:'', badges:[] },
+  { id:7,  year:'2015', name:'NYRR NYC (Knickerbocker) 60K',                 dist:'60k',  distMi:37.3,  date:'Nov 14th 2015',  location:'Manhattan, NY',    time:'5:53:06',   overall:'81 / 351', division:'62 / 248', url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/14275/results#1520679',                                               notes:'', badges:[{label:'NYRR',cls:'badge-blue'}] },
+  { id:8,  year:'2015', name:'3 Days at the Fair',                           dist:'timed',distMi:35,    date:'May 16th 2015',  location:'Augusta, NJ',      time:'35 mi',     overall:'39 / 42',  division:'23 / 24',  url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/12462/results#1451195',                                              notes:'24-hour event', badges:[{label:'24 Hours',cls:'badge-purple'}] },
+  // 2013
+  { id:9,  year:'2013', name:'3 Days at the Fair',                           dist:'timed',distMi:100,   date:'May 16th 2013',  location:'Augusta, NJ',      time:'100 mi',    overall:'10 / 39',  division:'10 / 25',  url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/8806/results#1251858',                                              notes:'24-hour event', badges:[{label:'24 Hours',cls:'badge-purple'},{label:'100 Miles',cls:'badge-red'}] },
+  { id:10, year:'2013', name:'The North Face Endurance Challenge New York',  dist:'50m',  distMi:50,    date:'May 4th 2013',   location:'New York, NY',     time:'14:03:48',  overall:'266 / 275',division:'233 / 240',url:'https://ultrarunning.com/calendar/event/the-north-face-endurance-challenge-new-york/race/9278/results#1274266',                notes:'', badges:[] },
+  { id:11, year:'2013', name:'New Jersey Ultra Trail Festival',              dist:'50m',  distMi:50,    date:'Mar 23rd 2013',  location:'Augusta, NJ',      time:'12:22:39',  overall:'41 / 56',  division:'28 / 37',  url:'https://ultrarunning.com/calendar/event/new-jersey-ultra-trail-festival/race/9151/results#1268511',                                notes:'', badges:[] },
+  { id:12, year:'2013', name:'Febapple Frozen Fifty',                        dist:'50k',  distMi:31.1,  date:'Feb 23rd 2013',  location:'Maplewood, NJ',    time:'7:14:09',   overall:'52 / 73',  division:'44 / 56',  url:'https://ultrarunning.com/calendar/event/febapple-frozen-fifty/race/8918/results#1257166',                                          notes:'', badges:[] },
+  // 2012
+  { id:13, year:'2012', name:'NYRR NYC (Knickerbocker) 60K',                 dist:'60k',  distMi:37.3,  date:'Nov 17th 2012',  location:'Manhattan, NY',    time:'6:06:46',   overall:'106 / 297',division:'89 / 207', url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/8490/results#1235795',                                               notes:'', badges:[{label:'NYRR',cls:'badge-blue'}] },
+  { id:14, year:'2012', name:'3 Days at the Fair',                           dist:'timed',distMi:83.21, date:'May 10th 2012',  location:'Augusta, NJ',      time:'83.21 mi',  overall:'11 / 26',  division:'9 / 14',   url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/7797/results#1190169',                                              notes:'24-hour event', badges:[{label:'24 Hours',cls:'badge-purple'}] },
+  { id:15, year:'2012', name:'New Jersey Ultra Trail Festival',              dist:'100k', distMi:62.1,  date:'Mar 24th 2012',  location:'Augusta, NJ',      time:'16:53:19',  overall:'25 / 29',  division:'21 / 23',  url:'https://ultrarunning.com/calendar/event/new-jersey-ultra-trail-festival/race/7663/results#1184897',                                notes:'', badges:[] },
+  { id:16, year:'2012', name:'Febapple Frozen Fifty',                        dist:'50m',  distMi:50,    date:'Feb 25th 2012',  location:'Maplewood, NJ',    time:'11:11:27',  overall:'21 / 25',  division:'20 / 22',  url:'https://ultrarunning.com/calendar/event/febapple-frozen-fifty/race/7092/results#1155192',                                          notes:'', badges:[] },
+  // 2011
+  { id:17, year:'2011', name:'NYRR NYC (Knickerbocker) 60K',                 dist:'60k',  distMi:37.3,  date:'Nov 19th 2011',  location:'Manhattan, NY',    time:'7:06:10',   overall:'189 / 270',division:'141 / 188',url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/5535/results#1081237',                                               notes:'', badges:[{label:'NYRR',cls:'badge-blue'}] },
+  { id:18, year:'2011', name:'3 Days at the Fair',                           dist:'timed',distMi:80.63, date:'May 12th 2011',  location:'Augusta, NJ',      time:'80.63 mi',  overall:'8 / 22',   division:'5 / 15',   url:'https://ultrarunning.com/calendar/event/3-days-at-the-fair/race/5473/results#1077713',                                              notes:'24-hour event', badges:[{label:'24 Hours',cls:'badge-purple'}] },
+  { id:19, year:'2011', name:'New Jersey Ultra Trail Festival',              dist:'50m',  distMi:50,    date:'Mar 19th 2011',  location:'Augusta, NJ',      time:'10:39:29',  overall:'34 / 51',  division:'25 / 35',  url:'https://ultrarunning.com/calendar/event/new-jersey-ultra-trail-festival/race/4743/results#1039774',                                notes:'', badges:[] },
+  // 2010
+  { id:20, year:'2010', name:'JFK 50 Mile',                                  dist:'50m',  distMi:50,    date:'Nov 20th 2010',  location:'Boonsboro, MD',    time:'11:20:07',  overall:'763 / 1039',division:'613 / 807',url:'https://ultrarunning.com/calendar/event/jfk/race/3150/results#951259',                                                           notes:'Oldest ultra in US', badges:[{label:'JFK 50',cls:'badge-amber'}] },
+  { id:21, year:'2010', name:'Mountain Madness',                             dist:'50k',  distMi:31.1,  date:'Oct 16th 2010',  location:'Ringwood, NJ',     time:'8:16:04',   overall:'73 / 85',  division:'59 / 68',  url:'https://ultrarunning.com/calendar/event/mountain-madness/race/4614/results#1032819',                                              notes:'', badges:[] },
+  // 2008
+  { id:22, year:'2008', name:'NYRR NYC (Knickerbocker) 60K',                 dist:'60k',  distMi:37.3,  date:'Nov 15th 2008',  location:'Manhattan, NY',    time:'6:41:09',   overall:'46 / 80',  division:'34 / 63',  url:'https://ultrarunning.com/calendar/event/nyrr-nyc-60k/race/4155/results#1008414',                                               notes:'First ultra', badges:[{label:'First Ultra',cls:'badge-orange'},{label:'NYRR',cls:'badge-blue'}] },
+];
+
+const DIST_LABELS = { '50k':'50K', '60k':'60K', '50m':'50M', '100k':'100K', '100m':'100M', 'timed':'TIMED' };
+const DIST_CLASS  = { '50k':'dist-50k','60k':'dist-60k','50m':'dist-50m','100k':'dist-100k','100m':'dist-100m','timed':'dist-timed' };
+const DIST_MILES  = { '50k':31.1,'60k':37.3,'50m':50,'100k':62.1,'100m':100,'timed':null };
+
+function loadRaces() {
+  const raw = localStorage.getItem('ultras_v3');
+  if (raw) { try { return JSON.parse(raw); } catch(e) {} }
+  localStorage.setItem('ultras_v3', JSON.stringify(SEED_RACES));
+  return JSON.parse(JSON.stringify(SEED_RACES));
+}
+
+function saveRaces(arr) { localStorage.setItem('ultras_v3', JSON.stringify(arr)); }
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function computeStats(races) {
+  const years = new Set(races.map(r => r.year)).size;
+  const miles = races.reduce((s, r) => s + (r.distMi || 0), 0);
+  document.getElementById('stat-years').textContent = years;
+  document.getElementById('stat-races').textContent = races.length;
+  document.getElementById('stat-miles').textContent = Math.round(miles);
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+
+function renderTable() {
+  const races = loadRaces();
+  computeStats(races);
+  const filtered = activeFilter === 'all' ? races : races.filter(r => r.dist === activeFilter);
+  const MONTHS = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  function parseRaceDate(r) {
+    // date format: "May 16th 2026", "Feb 23rd 2013", etc.
+    const m = (r.date || '').match(/(\w+)\s+\d+\w*\s+(\d{4})/);
+    if (m) {
+      const mon = MONTHS[m[1].toLowerCase().slice(0,3)];
+      return new Date(+m[2], mon ?? 0);
+    }
+    return new Date(+r.year || 0, 0);
+  }
+  const sorted = [...filtered].sort((a, b) => parseRaceDate(b) - parseRaceDate(a));
+  const tbody = document.getElementById('raceBody');
+
+  let html = '';
+  for (const r of sorted) {
+    const distLabel = DIST_LABELS[r.dist] || '—';
+    const distCls   = DIST_CLASS[r.dist]  || 'dist-timed';
+    const badgesHtml = (r.badges||[]).map(b => `<span class="badge ${b.cls}">${b.label}</span>`).join('');
+    const nameHtml = r.url
+      ? `<a href="${r.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${r.name}</a>`
+      : r.name;
+
+    let resultHtml = '';
+    if (r.dist === 'timed') {
+      resultHtml = `<div class="time-timed">${r.time || '—'}</div>`;
+    } else {
+      resultHtml = `<div class="time-val">${r.time || '—'}</div>`;
+    }
+    if (r.overall)  resultHtml += `<div class="time-place">Overall: ${r.overall}</div>`;
+    if (r.division) resultHtml += `<div class="time-place">M: ${r.division}</div>`;
+
+    html += `
+    <tr class="race-row" onclick="openModal(${r.id})">
+      <td class="td-year">${r.year}</td>
+      <td class="td-dist"><span class="dist-pill ${distCls}">${distLabel}</span></td>
+      <td>
+        <div class="race-name">${nameHtml}</div>
+        <div class="race-meta">${[r.date, r.location].filter(Boolean).join(' · ')}</div>
+        ${r.notes ? `<div class="race-meta" style="margin-top:3px;font-style:italic;opacity:.7">${r.notes}</div>` : ''}
+        ${badgesHtml ? `<div class="badge-row">${badgesHtml}</div>` : ''}
+      </td>
+      <td class="td-time">${resultHtml}</td>
+    </tr>`;
+  }
+
+  html += `<tr class="add-row"><td colspan="4"><button class="add-btn" onclick="openModal(null, event)">＋ Add Race</button></td></tr>`;
+  tbody.innerHTML = html;
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+let editingId = null;
+
+function openModal(id, event) {
+  if (event) event.stopPropagation();
+  editingId = id;
+  const races = loadRaces();
+  document.getElementById('btnDelete').style.display = id === null ? 'none' : 'inline-block';
+  document.getElementById('modalTitle').textContent = id === null ? 'Add Race' : 'Edit Race';
+
+  if (id === null) {
+    ['inputName','inputYear','inputDate','inputLocation','inputTime','inputOverall','inputDivision','inputUrl','inputNotes'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('inputYear').value = new Date().getFullYear();
+    document.getElementById('inputDist').value = '50k';
+  } else {
+    const r = races.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('inputName').value     = r.name || '';
+    document.getElementById('inputYear').value     = r.year || '';
+    document.getElementById('inputDist').value     = r.dist || '50k';
+    document.getElementById('inputDate').value     = r.date || '';
+    document.getElementById('inputLocation').value = r.location || '';
+    document.getElementById('inputTime').value     = r.time || '';
+    document.getElementById('inputOverall').value  = r.overall || '';
+    document.getElementById('inputDivision').value = r.division || '';
+    document.getElementById('inputUrl').value      = r.url || '';
+    document.getElementById('inputNotes').value    = r.notes || '';
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+function saveRace() {
+  let races = loadRaces();
+  const dist = document.getElementById('inputDist').value;
+  const entry = {
+    year:     document.getElementById('inputYear').value.trim(),
+    name:     document.getElementById('inputName').value.trim() || 'Unnamed Race',
+    dist,
+    distMi:   DIST_MILES[dist],
+    date:     document.getElementById('inputDate').value.trim(),
+    location: document.getElementById('inputLocation').value.trim(),
+    time:     document.getElementById('inputTime').value.trim() || null,
+    overall:  document.getElementById('inputOverall').value.trim(),
+    division: document.getElementById('inputDivision').value.trim(),
+    url:      document.getElementById('inputUrl').value.trim(),
+    notes:    document.getElementById('inputNotes').value.trim(),
+    badges:   [],
+  };
+  if (editingId === null) {
+    entry.id = Date.now();
+    races.push(entry);
+  } else {
+    races = races.map(r => r.id === editingId ? { ...r, ...entry, id: r.id } : r);
+  }
+  saveRaces(races);
+  renderTable();
+  closeModal();
+}
+
+function deleteRace() {
+  if (editingId === null) return;
+  if (!confirm('Remove this race?')) return;
+  saveRaces(loadRaces().filter(r => r.id !== editingId));
+  renderTable();
+  closeModal();
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('.distance-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.distance-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderTable();
+  });
+});
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+renderTable();
+</script>
+</body>
+</html>
