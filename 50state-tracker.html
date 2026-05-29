@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>50-State Marathon Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #181818;
+    --bg3: #222;
+    --border: #2a2a2a;
+    --border2: #3a3a3a;
+    --text: #f0ede8;
+    --text2: #999;
+    --text3: #555;
+    --green: #1D9E75;
+    --green-bg: #0d2b20;
+    --green-border: #1a5c42;
+    --green-text: #4ecfa0;
+    --amber: #c07a18;
+    --amber-bg: #2a1e08;
+    --amber-border: #6b4410;
+    --amber-text: #f0a944;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 2rem 1.5rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2rem;
+    border-bottom: 0.5px solid var(--border);
+    padding-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 0.4rem;
+  }
+
+  .subtitle {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Two-column layout: main + sidebar */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .main-col {}
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .stat-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .stat-val.green { color: var(--green-text); }
+  .stat-val.amber { color: var(--amber-text); }
+
+  .progress-wrap {
+    background: var(--bg3);
+    border-radius: 4px;
+    height: 6px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    display: flex;
+  }
+
+  #bar-done { height: 100%; background: var(--green); transition: width .4s; }
+  #bar-reg  { height: 100%; background: var(--amber); transition: width .4s; }
+
+  .legend-row {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    font-size: 12px;
+    color: var(--text2);
+    align-items: center;
+  }
+
+  .leg { display: flex; align-items: center; gap: 6px; }
+
+  .leg-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .leg-dot.done   { background: var(--green-bg); border: 1px solid var(--green-border); }
+  .leg-dot.reg    { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .leg-dot.none   { background: var(--bg2); border: 1px solid var(--border); }
+
+  .hint { margin-left: auto; font-size: 11px; color: var(--text3); }
+
+  .map-section { margin-bottom: 1.5rem; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  #usmap { width: 100%; display: block; }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+
+  .state-card {
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    padding: 8px 10px;
+    background: var(--bg2);
+    transition: border-color .15s;
+  }
+
+  .state-card:hover { border-color: var(--border2); }
+
+  .state-card.done {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+  }
+
+  .state-card.registered {
+    background: var(--amber-bg);
+    border-color: var(--amber-border);
+  }
+
+  .sc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .sc-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .state-card.done .sc-name      { color: var(--green-text); }
+  .state-card.registered .sc-name { color: var(--amber-text); }
+
+  .sc-btns { display: flex; gap: 3px; }
+
+  .sc-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 1px 5px;
+    border: 0.5px solid var(--border2);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text3);
+    line-height: 1.7;
+    transition: background .12s, color .12s;
+  }
+
+  .sc-btn:hover { background: var(--bg3); color: var(--text2); }
+  .state-card.done .sc-btn       { border-color: var(--green-border); color: var(--green-text); }
+  .state-card.registered .sc-btn { border-color: var(--amber-border); color: var(--amber-text); }
+
+  .race-input, .date-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    cursor: text;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .race-input {
+    font-size: 11px;
+    color: var(--text2);
+    padding: 0;
+  }
+
+  .date-input {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    padding: 0;
+    margin-top: 2px;
+  }
+
+  .state-card.done .race-input      { color: var(--green-text); opacity: .85; }
+  .state-card.done .date-input      { color: var(--green-text); opacity: .6; }
+  .state-card.registered .race-input { color: var(--amber-text); opacity: .9; }
+  .state-card.registered .date-input { color: var(--amber-text); opacity: .6; }
+
+  /* ── Sidebar calendar ── */
+  .sidebar { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .cal-year-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .cal-month { margin-bottom: 6px; }
+
+  .cal-month-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 2px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+  }
+
+  .cal-dow {
+    font-family: 'DM Mono', monospace;
+    font-size: 7px;
+    color: var(--text3);
+    text-align: center;
+    padding-bottom: 1px;
+  }
+
+  .cal-day {
+    font-family: 'DM Mono', monospace;
+    font-size: 7px;
+    text-align: center;
+    line-height: 11px;
+    height: 11px;
+    border-radius: 2px;
+    color: var(--text3);
+    position: relative;
+  }
+
+  .cal-day.has-race {
+    font-weight: 500;
+    border-radius: 2px;
+  }
+
+  .cal-day.race-done {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    color: var(--green-text);
+  }
+
+  .cal-day.race-registered {
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    color: var(--amber-text);
+  }
+
+  .cal-day[title] { cursor: default; }
+
+  .cal-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 10px;
+    color: var(--text);
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .cal-day.has-race:hover .cal-tooltip { display: block; }
+
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fatih Karakurt</h1>
+  <div class="subtitle">50-State Marathon Quest</div>
+</header>
+
+<div class="layout">
+  <div class="main-col">
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Done</div><div class="stat-val green" id="s-done">3</div></div>
+      <div class="stat"><div class="stat-label">Registered</div><div class="stat-val amber" id="s-reg">2</div></div>
+      <div class="stat"><div class="stat-label">Remaining</div><div class="stat-val" id="s-left">45</div></div>
+      <div class="stat"><div class="stat-label">Progress</div><div class="stat-val" id="s-pct">6%</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div id="bar-done" style="width:6%"></div>
+      <div id="bar-reg"  style="width:4%"></div>
+    </div>
+
+    <div class="legend-row">
+      <div class="leg"><div class="leg-dot done"></div>Done</div>
+      <div class="leg"><div class="leg-dot reg"></div>Registered</div>
+      <div class="leg"><div class="leg-dot none"></div>Not yet</div>
+      <span class="hint">D / R buttons toggle status &nbsp;·&nbsp; click race or date to edit</span>
+    </div>
+
+    <div class="map-section">
+      <div class="section-label">Map</div>
+      <svg id="usmap" viewBox="0 0 960 580"></svg>
+    </div>
+
+    <div class="section-label">All 50 states</div>
+    <div class="state-grid" id="grid"></div>
+
+  </div><!-- /main-col -->
+
+  <div class="sidebar" id="sidebar"></div>
+
+</div><!-- /layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+const STATES = [
+  {abbr:"AL",name:"Alabama",race:"Rocket City Marathon",date:"",status:"none"},
+  {abbr:"AK",name:"Alaska",race:"Mayor's Midnight Sun Marathon",date:"",status:"none"},
+  {abbr:"AZ",name:"Arizona",race:"Phoenix Marathon",date:"",status:"none"},
+  {abbr:"AR",name:"Arkansas",race:"Little Rock Marathon",date:"",status:"none"},
+  {abbr:"CA",name:"California",race:"Rock 'n' Roll San Diego",date:"May 31, 2008",status:"done"},
+  {abbr:"CO",name:"Colorado",race:"Colfax Marathon",date:"",status:"none"},
+  {abbr:"CT",name:"Connecticut",race:"Hartford Marathon",date:"Oct 10, 2026",status:"registered"},
+  {abbr:"DE",name:"Delaware",race:"Delaware Marathon",date:"",status:"none"},
+  {abbr:"FL",name:"Florida",race:"A1A Fort Lauderdale Marathon",date:"",status:"none"},
+  {abbr:"GA",name:"Georgia",race:"Publix Atlanta Marathon",date:"",status:"none"},
+  {abbr:"HI",name:"Hawaii",race:"Honolulu Marathon",date:"",status:"none"},
+  {abbr:"ID",name:"Idaho",race:"Boise Marathon",date:"",status:"none"},
+  {abbr:"IL",name:"Illinois",race:"Chicago Marathon",date:"",status:"none"},
+  {abbr:"IN",name:"Indiana",race:"Indy Monumental Marathon",date:"",status:"none"},
+  {abbr:"IA",name:"Iowa",race:"IMT Des Moines Marathon",date:"",status:"none"},
+  {abbr:"KS",name:"Kansas",race:"Wichita Marathon",date:"",status:"none"},
+  {abbr:"KY",name:"Kentucky",race:"Kentucky Derby Festival Marathon",date:"",status:"none"},
+  {abbr:"LA",name:"Louisiana",race:"Rock 'n' Roll New Orleans",date:"",status:"none"},
+  {abbr:"ME",name:"Maine",race:"MDI Marathon",date:"",status:"none"},
+  {abbr:"MD",name:"Maryland",race:"Baltimore Marathon",date:"",status:"none"},
+  {abbr:"MA",name:"Massachusetts",race:"Boston Marathon",date:"",status:"none"},
+  {abbr:"MI",name:"Michigan",race:"Detroit Free Press Marathon",date:"",status:"none"},
+  {abbr:"MN",name:"Minnesota",race:"Grandma's Marathon",date:"",status:"none"},
+  {abbr:"MS",name:"Mississippi",race:"Mississippi Blues Marathon",date:"",status:"none"},
+  {abbr:"MO",name:"Missouri",race:"Go! St. Louis Marathon",date:"",status:"none"},
+  {abbr:"MT",name:"Montana",race:"Big Sky Marathon",date:"",status:"none"},
+  {abbr:"NE",name:"Nebraska",race:"Lincoln Marathon",date:"",status:"none"},
+  {abbr:"NV",name:"Nevada",race:"Rock 'n' Roll Las Vegas",date:"",status:"none"},
+  {abbr:"NH",name:"New Hampshire",race:"NH Marathon",date:"",status:"none"},
+  {abbr:"NJ",name:"New Jersey",race:"NJ Marathon (Jersey City)",date:"Apr 19, 2026",status:"done"},
+  {abbr:"NM",name:"New Mexico",race:"Albuquerque Marathon",date:"",status:"none"},
+  {abbr:"NY",name:"New York",race:"ING NYC Marathon",date:"Nov 3, 2013",status:"done"},
+  {abbr:"NC",name:"North Carolina",race:"Quintiles Wrightsville Beach",date:"",status:"none"},
+  {abbr:"ND",name:"North Dakota",race:"Fargo Marathon",date:"",status:"none"},
+  {abbr:"OH",name:"Ohio",race:"Columbus Marathon",date:"",status:"none"},
+  {abbr:"OK",name:"Oklahoma",race:"OKC Memorial Marathon",date:"",status:"none"},
+  {abbr:"OR",name:"Oregon",race:"Eugene Marathon",date:"",status:"none"},
+  {abbr:"PA",name:"Pennsylvania",race:"Philadelphia Marathon",date:"Nov 22, 2026",status:"registered"},
+  {abbr:"RI",name:"Rhode Island",race:"Newport Marathon",date:"",status:"none"},
+  {abbr:"SC",name:"South Carolina",race:"Kiawah Island Marathon",date:"",status:"none"},
+  {abbr:"SD",name:"South Dakota",race:"Deadwood Mickelson Trail",date:"",status:"none"},
+  {abbr:"TN",name:"Tennessee",race:"St. Jude Memphis Marathon",date:"",status:"none"},
+  {abbr:"TX",name:"Texas",race:"Dallas Marathon",date:"",status:"none"},
+  {abbr:"UT",name:"Utah",race:"St. George Marathon",date:"",status:"none"},
+  {abbr:"VT",name:"Vermont",race:"Vermont City Marathon",date:"",status:"none"},
+  {abbr:"VA",name:"Virginia",race:"Marine Corps Marathon",date:"",status:"none"},
+  {abbr:"WA",name:"Washington",race:"Seattle Marathon",date:"",status:"none"},
+  {abbr:"WV",name:"West Virginia",race:"Charleston Distance Run",date:"",status:"none"},
+  {abbr:"WI",name:"Wisconsin",race:"Lakefront Marathon",date:"",status:"none"},
+  {abbr:"WY",name:"Wyoming",race:"Wyoming Marathon",date:"",status:"none"},
+];
+
+const KEY = 'marathon50_v2';
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if (saved) saved.forEach(s => { const m = STATES.find(x => x.abbr === s.abbr); if (m) { m.status = s.status; m.race = s.race; m.date = s.date; } });
+  } catch(e) {}
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(STATES.map(s => ({abbr:s.abbr,status:s.status,race:s.race,date:s.date}))));
+}
+
+load();
+
+const byAbbr = {};
+STATES.forEach(s => byAbbr[s.abbr] = s);
+
+const nameMap = {
+  "Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA",
+  "Colorado":"CO","Connecticut":"CT","Delaware":"DE","Florida":"FL","Georgia":"GA",
+  "Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS",
+  "Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA",
+  "Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT",
+  "Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM",
+  "New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK",
+  "Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC",
+  "South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT",
+  "Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"
+};
+
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DOW = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+// Parse "Mon DD, YYYY" or "Mon DD YYYY" style dates
+function parseRaceDate(str) {
+  if (!str) return null;
+  const d = new Date(str);
+  if (!isNaN(d)) return d;
+  return null;
+}
+
+// Build race date lookup: "YYYY-M-D" -> {race, status}
+function buildRaceLookup() {
+  const map = {};
+  STATES.forEach(s => {
+    if (!s.date || s.status === 'none') return;
+    const d = parseRaceDate(s.date);
+    if (!d) return;
+    const key = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+    map[key] = {race: s.race, state: s.name, status: s.status};
+  });
+  return map;
+}
+
+function buildCalendar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+  const raceLookup = buildRaceLookup();
+
+  [2026, 2027].forEach(year => {
+    const yearDiv = document.createElement('div');
+
+    const yearLabel = document.createElement('div');
+    yearLabel.className = 'cal-year-label';
+    yearLabel.textContent = year;
+    yearDiv.appendChild(yearLabel);
+
+    const monthLimit = year === 2027 ? 5 : 12;
+    for (let m = 0; m < monthLimit; m++) {
+      const firstDay = new Date(year, m, 1);
+      const daysInMonth = new Date(year, m + 1, 0).getDate();
+      const startDow = firstDay.getDay();
+
+      const monthDiv = document.createElement('div');
+      monthDiv.className = 'cal-month';
+
+      const monthName = document.createElement('div');
+      monthName.className = 'cal-month-name';
+      monthName.textContent = MONTH_NAMES[m] + ' ' + year;
+      monthDiv.appendChild(monthName);
+
+      const grid = document.createElement('div');
+      grid.className = 'cal-grid';
+
+      // Day-of-week headers
+      DOW.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'cal-dow';
+        h.textContent = d;
+        grid.appendChild(h);
+      });
+
+      // Empty cells before first day
+      for (let i = 0; i < startDow; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day';
+        grid.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        cell.textContent = d;
+
+        const key = year + '-' + m + '-' + d;
+        const race = raceLookup[key];
+        if (race) {
+          cell.classList.add('has-race');
+          cell.classList.add(race.status === 'done' ? 'race-done' : 'race-registered');
+
+          const tip = document.createElement('div');
+          tip.className = 'cal-tooltip';
+          tip.textContent = race.state + ': ' + race.race;
+          cell.appendChild(tip);
+        }
+
+        grid.appendChild(cell);
+      }
+
+      monthDiv.appendChild(grid);
+      yearDiv.appendChild(monthDiv);
+    }
+
+    sidebar.appendChild(yearDiv);
+  });
+}
+
+function stateColor(s) {
+  if (!s) return '#222';
+  if (s.status === 'done') return '#1D9E75';
+  if (s.status === 'registered') return '#c07a18';
+  return '#222';
+}
+
+function updateStats() {
+  const done = STATES.filter(s => s.status === 'done').length;
+  const reg  = STATES.filter(s => s.status === 'registered').length;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-reg').textContent  = reg;
+  document.getElementById('s-left').textContent = 50 - done - reg;
+  document.getElementById('s-pct').textContent  = Math.round(done / 50 * 100) + '%';
+  document.getElementById('bar-done').style.width = (done / 50 * 100) + '%';
+  document.getElementById('bar-reg').style.width  = (reg  / 50 * 100) + '%';
+}
+
+function renderMap() {
+  d3.selectAll('path.st').attr('fill', d => {
+    const abbr = nameMap[d.properties.name];
+    return stateColor(abbr ? byAbbr[abbr] : null);
+  }).attr('stroke', '#0f0f0f').attr('stroke-width', 1);
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  STATES.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'state-card' + (s.status === 'done' ? ' done' : s.status === 'registered' ? ' registered' : '');
+
+    const top = document.createElement('div');
+    top.className = 'sc-top';
+
+    const nm = document.createElement('span');
+    nm.className = 'sc-name';
+    nm.textContent = s.name;
+
+    const btns = document.createElement('div');
+    btns.className = 'sc-btns';
+
+    const btnD = document.createElement('button');
+    btnD.className = 'sc-btn'; btnD.textContent = 'D'; btnD.title = 'Mark done';
+    btnD.onclick = () => { s.status = s.status === 'done' ? 'none' : 'done'; save(); refresh(); };
+
+    const btnR = document.createElement('button');
+    btnR.className = 'sc-btn'; btnR.textContent = 'R'; btnR.title = 'Mark registered';
+    btnR.onclick = () => { s.status = s.status === 'registered' ? 'none' : 'registered'; save(); refresh(); };
+
+    btns.append(btnD, btnR);
+    top.append(nm, btns);
+
+    const ri = document.createElement('input');
+    ri.type = 'text'; ri.className = 'race-input';
+    ri.value = s.race; ri.placeholder = 'Race name';
+    ri.setAttribute('aria-label', 'Race for ' + s.name);
+    ri.oninput = () => { s.race = ri.value; save(); };
+
+    const di = document.createElement('input');
+    di.type = 'text'; di.className = 'date-input';
+    di.value = s.date; di.placeholder = 'Date';
+    di.setAttribute('aria-label', 'Date for ' + s.name);
+    di.oninput = () => { s.date = di.value; save(); buildCalendar(); };
+
+    card.append(top, ri, di);
+    grid.appendChild(card);
+  });
+}
+
+function refresh() { buildGrid(); updateStats(); renderMap(); buildCalendar(); }
+
+fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
+  .then(r => r.json())
+  .then(us => {
+    const svg  = d3.select('#usmap');
+    const proj = d3.geoAlbersUsa().scale(1200).translate([480, 290]);
+    const path = d3.geoPath().projection(proj);
+    svg.selectAll('path.st')
+      .data(topojson.feature(us, us.objects.states).features)
+      .join('path').attr('class','st').attr('d', path)
+      .attr('fill', d => { const a = nameMap[d.properties.name]; return stateColor(a ? byAbbr[a] : null); })
+      .attr('stroke','#0f0f0f').attr('stroke-width', 1);
+  });
+
+buildGrid();
+updateStats();
+buildCalendar();
+</script>
+</body>
+</html>
